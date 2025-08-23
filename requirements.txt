@@ -1,0 +1,28 @@
+# requirements.txt
+
+# App
+
+flask>=3.0
+python-dotenv>=1.0
+openai>=1.40
+
+# Gmail
+
+google-api-python-client>=2.130
+google-auth-httplib2>=0.2
+google-auth-oauthlib>=1.2
+
+# Microsoft Graph
+
+msal>=1.28
+requests>=2.32
+
+# IMAP (generic + Proton Bridge)
+
+imapclient>=3.0
+beautifulsoup4>=4.12
+
+# Dev tools (optional but useful)
+
+black>=24.3
+flake8>=7.0
