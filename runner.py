@@ -1,6 +1,7 @@
 # app.py
 # pip install flask google-api-python-client google-auth-oauthlib openai
 from flask import Flask, request, render_template_string, Response, stream_with_context
+from urllib.parse import quote_plus
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -83,12 +84,12 @@ TEMPLATE = """
 <title>Tone Coach</title>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-family:system-ui;">
   <form method="get" action="/">
-    <input style="width:70%" name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)" value="{{q}}"/>
+    <input style="width:70%" name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)" value="{{ q|e }}"/>
     <button>Fetch</button>
     {% if threads %}
     <ul>
     {% for t in threads %}
-      <li><a href="/?q={{q}}&thread_id={{t['id']}}">{{t['snippet']}}</a></li>
+      <li><a href="/?q={{ quote_plus(q)|e }}&thread_id={{t['id']}}">{{t['snippet']}}</a></li>
     {% endfor %}
     </ul>
     {% endif %}
@@ -131,7 +132,16 @@ def index():
     text = ""
     if thread_id:
         text, _ = thread_text(svc, thread_id)
-    return render_template_string(TEMPLATE, thread=text, thread_id=thread_id, draft="", output="", threads=threads, q=q)
+    return render_template_string(
+        TEMPLATE,
+        thread=text,
+        thread_id=thread_id,
+        draft="",
+        output="",
+        threads=threads,
+        q=q,
+        quote_plus=quote_plus,
+    )
 
 @app.route("/coach", methods=["POST"])
 def coach():
