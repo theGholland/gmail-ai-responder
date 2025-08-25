@@ -61,6 +61,12 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 
 > The JSON file and generated tokens contain secrets—keep them out of version control.
 
+#### OAuth consent testing restrictions
+
+* An unverified app left in **Testing** mode only works for email addresses added as **test users**.
+* To use the app outside that pool, add your own accounts as test users in the Google Cloud console or submit the app for verification.
+* Otherwise Google will block authorization with `Error 403: access_denied`.
+
 ## Security model
 
 * Keep the LLM server and the Flask app bound to **loopback only** (`127.0.0.1`).
