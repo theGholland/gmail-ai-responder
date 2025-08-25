@@ -1,14 +1,18 @@
 # app.py
 # pip install flask google-api-python-client google-auth-oauthlib openai
 from flask import Flask, request, render_template_string, Response, stream_with_context
+from urllib.parse import quote_plus
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
-import base64, email, os, pickle, re
+import base64, email, os, pickle, re, logging
+from bs4 import BeautifulSoup
 import dotenv
 
 dotenv.load_dotenv()
+logging.basicConfig(level=logging.INFO)
 
 SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
 LLM_URL = os.getenv("LLM_URL", "http://127.0.0.1:11434/v1")                      # Ollama default
@@ -37,19 +41,37 @@ def gmail_service():
     return build("gmail","v1",credentials=creds)
 
 def thread_text(svc, thread_id):
+    def collect_parts(payload):
+        plain_parts, html_parts = [], []
+
+        def walk(part):
+            mime = part.get("mimeType", "")
+            body = part.get("body", {})
+            if mime.startswith("multipart/"):
+                for sp in part.get("parts") or []:
+                    walk(sp)
+            elif mime.startswith("text/plain"):
+                data = body.get("data")
+                if data:
+                    plain_parts.append(
+                        base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
+                    )
+            elif mime.startswith("text/html"):
+                data = body.get("data")
+                if data:
+                    html = base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore")
+                    html_parts.append(BeautifulSoup(html, "html.parser").get_text())
+
+        walk(payload)
+        return plain_parts or html_parts
+
     th = svc.users().threads().get(userId="me", id=thread_id, format="full").execute()
     parts = []
     for m in th["messages"]:
-        payload = m["payload"]
-        data = payload.get("body",{}).get("data")
-        if not data:
-            for p in payload.get("parts") or []:
-                if p.get("mimeType","").startswith("text/plain") and p.get("body",{}).get("data"):
-                    data = p["body"]["data"]; break
-        if data:
-            parts.append(base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore"))
-    text = "\n\n---\n\n".join(parts) if parts else "No text content found for this thread."
-    return text, th
+        texts = collect_parts(m["payload"])
+        if texts:
+            parts.append("\n".join(texts))
+    return "\n\n---\n\n".join(parts), th
 
 def create_gmail_draft(svc, to_addr, subj, body):
     msg = email.message.EmailMessage()
@@ -64,12 +86,12 @@ TEMPLATE = """
 <title>Tone Coach</title>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-family:system-ui;">
   <form method="get" action="/">
-    <input style="width:70%" name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)" value="{{q}}"/>
+    <input style="width:70%" name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)" value="{{ q|e }}"/>
     <button>Fetch</button>
     {% if threads %}
     <ul>
     {% for t in threads %}
-      <li><a href="/?q={{q}}&thread_id={{t['id']}}">{{t['snippet']}}</a></li>
+      <li><a href="/?q={{ quote_plus(q)|e }}&thread_id={{t['id']}}">{{t['snippet']}}</a></li>
     {% endfor %}
     </ul>
     {% endif %}
@@ -109,10 +131,19 @@ def index():
     thread_id = request.args.get("thread_id")
     if not thread_id and threads:
         thread_id = threads[0]["id"]
-    text = None
+    thread_display = ""
     if thread_id:
         text, _ = thread_text(svc, thread_id)
-    return render_template_string(TEMPLATE, thread=text, thread_id=thread_id, draft="", output="", threads=threads, q=q)
+    return render_template_string(
+        TEMPLATE,
+        thread=text,
+        thread_id=thread_id,
+        draft="",
+        output="",
+        threads=threads,
+        q=q,
+        quote_plus=quote_plus,
+    )
 
 @app.route("/coach", methods=["POST"])
 def coach():
