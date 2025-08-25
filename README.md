@@ -8,7 +8,7 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 
 * **Gmail integration.** `runner.py` authenticates with Google via OAuth, retrieves thread contents and can create reply drafts.
 * **Local model interaction.** The assembled prompt (thread, draft, and goal) is sent to a locally hosted model through an OpenAI-compatible endpoint and the model's critique is returned.
-* **Web interface.** Flask routes display the latest thread, accept user drafts/goals, and call the model for tone coaching.
+* **Web interface.** Flask routes display the latest thread, accept user drafts/goals, and stream model coaching output live.
 * **Security posture.** Designed for localhost-only deployment; start with read-only mail scopes and never commit secrets.
 
 ## Quickstart (single‑user, localhost)
