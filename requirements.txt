@@ -10,7 +10,8 @@ openai>=1.40
 
 google-api-python-client>=2.130
 google-auth-httplib2>=0.2
-google-auth-oauthlib>=1.2
+google-auth-oauthlib==0.4.1
+six>=1.17
 
 # Microsoft Graph
 
