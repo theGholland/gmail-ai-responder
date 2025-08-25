@@ -22,7 +22,7 @@ def gmail_service():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
-            creds = flow.run_local_server(port=0)
+            creds = flow.run_console()
         pickle.dump(creds, open("token.pickle","wb"))
     return build("gmail","v1",credentials=creds)
 
