@@ -22,12 +22,14 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 
    The default OpenAI‑style endpoint is `http://127.0.0.1:11434/v1`.
 
-2. **Create and activate a Python environment.**
+2. **Create and activate a Python environment.** Install the pinned dependencies to ensure consistent versions:
 
    ```bash
    python -m venv .venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    ```
+
+   Using a virtual environment keeps these pinned packages isolated from your system Python.
 
 3. **Configure environment.** Copy `.env.example` ➜ `.env` and set values. At minimum:
 
