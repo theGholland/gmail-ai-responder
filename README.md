@@ -38,7 +38,14 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 
 4. **Gmail or Microsoft Graph auth (optional at first).**
 
-  * For Gmail, place your `credentials.json` (OAuth client) next to your runner script. On first run the script logs an authorization URL instead of opening a browser; copy the link into a browser, authorize the app, and paste the returned code back into the terminal. Use scope `gmail.readonly` until you enable draft creation.
+  * For Gmail, place your `credentials.json` (OAuth client) next to your runner script. On first run the script logs an authorization URL instead of opening a browser. Open that link in a browser, authorize the app, and Google will display a one‑time code:
+
+    1. Visit the printed URL and sign in.
+    2. Approve the requested scopes.
+    3. Copy the authorization code shown by Google.
+    4. Paste the code back into the terminal when prompted.
+
+    Use scope `gmail.readonly` until you enable draft creation.
    * For Outlook/Microsoft 365, register an app in Azure AD and set `AZURE_APP_CLIENT_ID` (device‑code flow is simplest during development).
 
 5. **Run your app.** The starter assumes a Flask app binding to `127.0.0.1:7860`. Visit that URL to fetch a thread, paste a draft, and call the local LLM.
