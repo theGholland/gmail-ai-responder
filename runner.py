@@ -2,13 +2,15 @@
 # pip install flask google-api-python-client google-auth-oauthlib openai
 from flask import Flask, request, render_template_string, Response, stream_with_context
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
-import base64, email, os, pickle, re
+import base64, email, os, pickle, re, logging
 import dotenv
 
 dotenv.load_dotenv()
+logging.basicConfig(level=logging.INFO)
 
 SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
 LLM_URL = os.getenv("LLM_URL", "http://127.0.0.1:11434/v1")                      # Ollama default
@@ -37,7 +39,11 @@ def gmail_service():
     return build("gmail","v1",credentials=creds)
 
 def thread_text(svc, thread_id):
-    th = svc.users().threads().get(userId="me", id=thread_id, format="full").execute()
+    try:
+        th = svc.users().threads().get(userId="me", id=thread_id, format="full").execute()
+    except HttpError:
+        logging.exception("Failed to retrieve thread %s", thread_id)
+        return "Unable to retrieve thread.", None
     parts = []
     for m in th["messages"]:
         payload = m["payload"]
@@ -108,10 +114,18 @@ def index():
     thread_id = request.args.get("thread_id")
     if not thread_id and threads:
         thread_id = threads[0]["id"]
-    text = ""
+    thread_display = ""
     if thread_id:
-        text, _ = thread_text(svc, thread_id)
-    return render_template_string(TEMPLATE, thread=text, thread_id=thread_id, draft="", output="", threads=threads, q=q)
+        thread_display, _ = thread_text(svc, thread_id)
+    return render_template_string(
+        TEMPLATE,
+        thread=thread_display,
+        thread_id=thread_id,
+        draft="",
+        output="",
+        threads=threads,
+        q=q,
+    )
 
 @app.route("/coach", methods=["POST"])
 def coach():
