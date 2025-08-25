@@ -66,6 +66,7 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 * An unverified app left in **Testing** mode only works for email addresses added as **test users**.
 * To use the app outside that pool, add your own accounts as test users in the Google Cloud console or submit the app for verification.
 * Otherwise Google will block authorization with `Error 403: access_denied`.
+* The best way to do this is to visit Google Auth Platform / Audience and add yourself as a test user
 
 ## Security model
 
