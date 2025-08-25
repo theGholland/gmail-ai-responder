@@ -48,7 +48,8 @@ def thread_text(svc, thread_id):
                     data = p["body"]["data"]; break
         if data:
             parts.append(base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore"))
-    return "\n\n---\n\n".join(parts), th
+    text = "\n\n---\n\n".join(parts) if parts else "No text content found for this thread."
+    return text, th
 
 def create_gmail_draft(svc, to_addr, subj, body):
     msg = email.message.EmailMessage()
@@ -79,7 +80,7 @@ TEMPLATE = """
     <input type="hidden" name="thread_id" value="{{thread_id or ""}}"/>
     <button>Coach</button>
   </form>
-  <div style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{thread or "Thread will appear here."}}</div>
+  <div style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{thread if thread is not none else "Thread will appear here."}}</div>
   <div id="output" style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{output or "Model output will appear here."}}</div>
 </div>
 <script>
@@ -108,7 +109,7 @@ def index():
     thread_id = request.args.get("thread_id")
     if not thread_id and threads:
         thread_id = threads[0]["id"]
-    text = ""
+    text = None
     if thread_id:
         text, _ = thread_text(svc, thread_id)
     return render_template_string(TEMPLATE, thread=text, thread_id=thread_id, draft="", output="", threads=threads, q=q)
