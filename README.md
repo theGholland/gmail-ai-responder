@@ -4,6 +4,13 @@
 
 This repository scaffolds a strictly local workflow: fetch an email thread from your provider (Gmail/Outlook/IMAP), pass the thread and your draft to a locally hosted LLM (Ollama or vLLM), receive a tonal critique plus two rewrites, and optionally create a **native draft** in your mailbox so you can send from your usual client.
 
+## How it works
+
+* **Gmail integration.** `runner.py` authenticates with Google via OAuth, retrieves thread contents and can create reply drafts.
+* **Local model interaction.** The assembled prompt (thread, draft, and goal) is sent to a locally hosted model through an OpenAI-compatible endpoint and the model's critique is returned.
+* **Web interface.** Flask routes display the latest thread, accept user drafts/goals, and call the model for tone coaching.
+* **Security posture.** Designed for localhost-only deployment; start with read-only mail scopes and never commit secrets.
+
 ## Quickstart (single‑user, localhost)
 
 1. **Install a local model server.** E.g., with Ollama:
@@ -33,6 +40,17 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
    * For Outlook/Microsoft 365, register an app in Azure AD and set `AZURE_APP_CLIENT_ID` (device‑code flow is simplest during development).
 
 5. **Run your app.** The starter assumes a Flask app binding to `127.0.0.1:7860`. Visit that URL to fetch a thread, paste a draft, and call the local LLM.
+
+### Creating Gmail `credentials.json`
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/) and create or select a project.
+2. Enable the **Gmail API** from *APIs & Services → Library*.
+3. Configure the **OAuth consent screen** (External user type is sufficient for personal/testing use) and add your Gmail address as a test user.
+4. Go to *APIs & Services → Credentials*, click **+ Create Credentials → OAuth client ID**, and choose **Desktop app**.
+5. Download the resulting JSON file and rename it to `credentials.json`.
+6. Place `credentials.json` next to `runner.py`; the first run will launch a browser to complete OAuth and store a token locally.
+
+> The JSON file and generated tokens contain secrets—keep them out of version control.
 
 ## Security model
 
