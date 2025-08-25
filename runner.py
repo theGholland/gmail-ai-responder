@@ -22,7 +22,11 @@ def gmail_service():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
-            creds = flow.run_console()
+            auth_url, _ = flow.authorization_url(prompt="consent")
+            print(f"Visit this URL to authorize:\n{auth_url}")
+            auth_code = input("Enter the authorization code: ")
+            flow.fetch_token(code=auth_code)
+            creds = flow.credentials
         pickle.dump(creds, open("token.pickle","wb"))
     return build("gmail","v1",credentials=creds)
 
