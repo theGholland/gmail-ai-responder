@@ -22,6 +22,7 @@ def gmail_service():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+            flow.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"  # or http://localhost if that URI is registered
             auth_url, _ = flow.authorization_url(prompt="consent")
             print(f"Visit this URL to authorize:\n{auth_url}")
             auth_code = input("Enter the authorization code: ")
