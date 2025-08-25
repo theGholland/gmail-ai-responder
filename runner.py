@@ -134,7 +134,7 @@ def coach():
             stream=True,
         )
         for chunk in stream:
-            text = chunk.choices[0].delta.get("content", "")
+            text = getattr(chunk.choices[0].delta, "content", "")
             output += text
             yield text
         beta = output.split("Beta", 1)[-1].strip()
