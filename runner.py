@@ -6,10 +6,13 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
 import base64, email, os, pickle
+import dotenv
 
-SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]  # read + create drafts
-LLM_URL = "http://127.0.0.1:11434/v1"                      # Ollama default
-MODEL  = "llama3.1"                                        # or qwen2.5:14b-instruct
+dotenv.load_dotenv()
+
+SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
+LLM_URL = os.getenv("LLM_URL", "http://127.0.0.1:11434/v1")                      # Ollama default
+MODEL  = os.getenv("MODEL", "llama3.1")                                        # or qwen2.5:14b-instruct
 
 app = Flask(__name__)
 
