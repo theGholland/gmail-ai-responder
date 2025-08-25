@@ -36,7 +36,7 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 
 4. **Gmail or Microsoft Graph auth (optional at first).**
 
-   * For Gmail, place your `credentials.json` (OAuth client) next to your runner script; first run will open a browser to consent. Use scope `gmail.readonly` until you enable draft creation.
+  * For Gmail, place your `credentials.json` (OAuth client) next to your runner script; the first run will print a URL in the console. Copy it into a browser, authorize the app, and paste the returned code back into the terminal. Use scope `gmail.readonly` until you enable draft creation.
    * For Outlook/Microsoft 365, register an app in Azure AD and set `AZURE_APP_CLIENT_ID` (device‑code flow is simplest during development).
 
 5. **Run your app.** The starter assumes a Flask app binding to `127.0.0.1:7860`. Visit that URL to fetch a thread, paste a draft, and call the local LLM.
@@ -48,7 +48,7 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 3. Configure the **OAuth consent screen** (External user type is sufficient for personal/testing use) and add your Gmail address as a test user.
 4. Go to *APIs & Services → Credentials*, click **+ Create Credentials → OAuth client ID**, and choose **Desktop app**.
 5. Download the resulting JSON file and rename it to `credentials.json`.
-6. Place `credentials.json` next to `runner.py`; the first run will launch a browser to complete OAuth and store a token locally.
+6. Place `credentials.json` next to `runner.py`; the first run will output a URL. Visit it in a browser, approve access, and paste the resulting code into the console to store a token locally.
 
 > The JSON file and generated tokens contain secrets—keep them out of version control.
 
