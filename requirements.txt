@@ -2,28 +2,27 @@
 
 # App
 
-flask>=3.0
-python-dotenv>=1.0
-openai>=1.40
+flask==3.1.2
+python-dotenv==1.1.1
+openai==1.101.0
 
 # Gmail
 
-google-api-python-client>=2.130
-google-auth-httplib2>=0.2
-google-auth-oauthlib==0.4.1
-six>=1.17
+google-api-python-client==2.179.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.0
 
 # Microsoft Graph
 
-msal>=1.28
-requests>=2.32
+msal==1.33.0
+requests==2.32.5
 
 # IMAP (generic + Proton Bridge)
 
-imapclient>=3.0
-beautifulsoup4>=4.12
+imapclient==3.0.1
+beautifulsoup4==4.13.5
 
 # Dev tools (optional but useful)
 
-black>=24.3
-flake8>=7.0
+black==25.1.0
+flake8==7.3.0
