@@ -5,7 +5,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
-import base64, email, os, pickle
+import base64, email, os, pickle, re
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]  # read + create drafts
 LLM_URL = "http://127.0.0.1:11434/v1"                      # Ollama default
@@ -137,8 +137,12 @@ def coach():
             text = chunk.choices[0].delta.get("content", "")
             output += text
             yield text
-        beta = output.split("Beta", 1)[-1].strip()
-        create_gmail_draft(svc, to, subj, beta)
+        match = re.search(r"(?s)(?:^|\n)Beta\s*[:\-]?\s*(.*)", output)
+        beta = match.group(1).strip() if match else None
+        if beta:
+            create_gmail_draft(svc, to, subj, beta)
+        else:
+            raise ValueError("Model output missing 'Beta' section")
 
     return Response(stream_with_context(generate()), mimetype="text/plain")
 
