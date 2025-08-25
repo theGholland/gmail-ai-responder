@@ -63,8 +63,15 @@ TEMPLATE = """
 <title>Tone Coach</title>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-family:system-ui;">
   <form method="get" action="/">
-    <input style="width:70%" name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)">
+    <input style="width:70%" name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)" value="{{q}}"/>
     <button>Fetch</button>
+    {% if threads %}
+    <ul>
+    {% for t in threads %}
+      <li><a href="/?q={{q}}&thread_id={{t['id']}}">{{t['snippet']}}</a></li>
+    {% endfor %}
+    </ul>
+    {% endif %}
   </form>
   <form method="post" action="/coach">
     <textarea name="draft" placeholder="Your draft…" style="width:100%;height:8rem;">{{draft or ""}}</textarea>
@@ -81,12 +88,14 @@ TEMPLATE = """
 def index():
     svc = gmail_service()
     q = request.args.get("q") or "in:inbox"            # default heuristic
-    threads = svc.users().threads().list(userId="me", q=q, maxResults=5).execute().get("threads", [])
-    thread_id = threads[0]["id"] if threads else None
+    threads = svc.users().threads().list(userId="me", q=q, maxResults=3).execute().get("threads", [])
+    thread_id = request.args.get("thread_id")
+    if not thread_id and threads:
+        thread_id = threads[0]["id"]
     text = ""
     if thread_id:
         text, _ = thread_text(svc, thread_id)
-    return render_template_string(TEMPLATE, thread=text, thread_id=thread_id, draft="", output="")
+    return render_template_string(TEMPLATE, thread=text, thread_id=thread_id, draft="", output="", threads=threads, q=q)
 
 @app.route("/coach", methods=["POST"])
 def coach():
