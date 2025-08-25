@@ -3,14 +3,16 @@
 from flask import Flask, request, render_template_string, Response, stream_with_context
 from urllib.parse import quote_plus
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
-import base64, email, os, pickle, re
+import base64, email, os, pickle, re, logging
 from bs4 import BeautifulSoup
 import dotenv
 
 dotenv.load_dotenv()
+logging.basicConfig(level=logging.INFO)
 
 SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
 LLM_URL = os.getenv("LLM_URL", "http://127.0.0.1:11434/v1")                      # Ollama default
@@ -129,7 +131,7 @@ def index():
     thread_id = request.args.get("thread_id")
     if not thread_id and threads:
         thread_id = threads[0]["id"]
-    text = ""
+    thread_display = ""
     if thread_id:
         text, _ = thread_text(svc, thread_id)
     return render_template_string(
