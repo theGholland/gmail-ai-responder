@@ -111,9 +111,17 @@ def index():
 @app.route("/coach", methods=["POST"])
 def coach():
     svc = gmail_service()
-    thread_id = request.form["thread_id"]
-    draft = request.form["draft"]
-    goal = request.form["goal"]
+    thread_id = request.form.get("thread_id")
+    draft = request.form.get("draft")
+    goal = request.form.get("goal")
+
+    if thread_id is None:
+        return "Missing thread_id", 400
+    if draft is None:
+        return "Missing draft", 400
+    if goal is None:
+        return "Missing goal", 400
+
     thread, th = thread_text(svc, thread_id)
     prompt = (
         f"You are a communication coach.\nA) THREAD: <<<{thread}>>>\n"
