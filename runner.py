@@ -6,17 +6,21 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
 import base64, email, os, pickle, re
+import dotenv
 
-SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]  # read + create drafts
-LLM_URL = "http://127.0.0.1:11434/v1"                      # Ollama default
-MODEL  = "llama3.1"                                        # or qwen2.5:14b-instruct
+dotenv.load_dotenv()
+
+SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
+LLM_URL = os.getenv("LLM_URL", "http://127.0.0.1:11434/v1")                      # Ollama default
+MODEL  = os.getenv("MODEL", "llama3.1")                                        # or qwen2.5:14b-instruct
 
 app = Flask(__name__)
 
 def gmail_service():
     creds = None
     if os.path.exists("token.pickle"):
-        creds = pickle.load(open("token.pickle","rb"))
+        with open("token.pickle", "rb") as f:
+            creds = pickle.load(f)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -28,7 +32,8 @@ def gmail_service():
             auth_code = input("Enter the authorization code: ")
             flow.fetch_token(code=auth_code)
             creds = flow.credentials
-        pickle.dump(creds, open("token.pickle","wb"))
+        with open("token.pickle", "wb") as f:
+            pickle.dump(creds, f)
     return build("gmail","v1",credentials=creds)
 
 def thread_text(svc, thread_id):
@@ -111,9 +116,17 @@ def index():
 @app.route("/coach", methods=["POST"])
 def coach():
     svc = gmail_service()
-    thread_id = request.form["thread_id"]
-    draft = request.form["draft"]
-    goal = request.form["goal"]
+    thread_id = request.form.get("thread_id")
+    draft = request.form.get("draft")
+    goal = request.form.get("goal")
+
+    if thread_id is None:
+        return "Missing thread_id", 400
+    if draft is None:
+        return "Missing draft", 400
+    if goal is None:
+        return "Missing goal", 400
+
     thread, th = thread_text(svc, thread_id)
     prompt = (
         f"You are a communication coach.\nA) THREAD: <<<{thread}>>>\n"
@@ -134,7 +147,7 @@ def coach():
             stream=True,
         )
         for chunk in stream:
-            text = chunk.choices[0].delta.get("content", "")
+            text = getattr(chunk.choices[0].delta, "content", "")
             output += text
             yield text
         match = re.search(r"(?s)(?:^|\n)Beta\s*[:\-]?\s*(.*)", output)
