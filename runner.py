@@ -1,6 +1,6 @@
 # app.py
 # pip install flask google-api-python-client google-auth-oauthlib openai
-from flask import Flask, request, redirect, render_template_string
+from flask import Flask, request, render_template_string, Response, stream_with_context
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -45,11 +45,6 @@ def thread_text(svc, thread_id):
             parts.append(base64.urlsafe_b64decode(data).decode("utf-8", errors="ignore"))
     return "\n\n---\n\n".join(parts), th
 
-def local_llm(prompt):
-    client = OpenAI(base_url=LLM_URL, api_key="ollama")
-    r = client.chat.completions.create(model=MODEL, temperature=0.3, messages=[{"role":"user","content":prompt}])
-    return r.choices[0].message.content
-
 def create_gmail_draft(svc, to_addr, subj, body):
     msg = email.message.EmailMessage()
     msg["To"] = to_addr
@@ -66,15 +61,31 @@ TEMPLATE = """
     <input style="width:70%" name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)">
     <button>Fetch</button>
   </form>
-  <form method="post" action="/coach">
+  <form id="coachForm" method="post" action="/coach">
     <textarea name="draft" placeholder="Your draft…" style="width:100%;height:8rem;">{{draft or ""}}</textarea>
     <input name="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)" style="width:100%;"/>
     <input type="hidden" name="thread_id" value="{{thread_id or ""}}"/>
     <button>Coach</button>
   </form>
   <div style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{thread or "Thread will appear here."}}</div>
-  <div style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{output or "Model output will appear here."}}</div>
+  <div id="output" style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{output or "Model output will appear here."}}</div>
 </div>
+<script>
+const form = document.getElementById('coachForm');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const output = document.getElementById('output');
+  output.textContent = "";
+  const resp = await fetch('/coach', { method: 'POST', body: new FormData(form) });
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    output.textContent += decoder.decode(value);
+  }
+});
+</script>
 """
 
 @app.route("/", methods=["GET"])
@@ -95,16 +106,32 @@ def coach():
     draft = request.form["draft"]
     goal = request.form["goal"]
     thread, th = thread_text(svc, thread_id)
-    prompt = f"You are a communication coach.\nA) THREAD: <<<{thread}>>>\nB) MY DRAFT: <<<{draft}>>>\nC) GOAL: {goal}\nTasks: diagnose tone; critique; two rewrites (Alpha minimal, Beta assertive). Keep facts intact."
-    output = local_llm(prompt)
-    # Optionally create a draft with the Beta version by crude split:
-    beta = output.split("Beta",1)[-1].strip()
-    # Pull a sensible reply subject and To from the last message:
+    prompt = (
+        f"You are a communication coach.\nA) THREAD: <<<{thread}>>>\n"
+        f"B) MY DRAFT: <<<{draft}>>>\nC) GOAL: {goal}\n"
+        "Tasks: diagnose tone; critique; two rewrites (Alpha minimal, Beta assertive). Keep facts intact."
+    )
+    client = OpenAI(base_url=LLM_URL, api_key="ollama")
     last = th["messages"][-1]["payload"]["headers"]
     subj = next((h["value"] for h in last if h["name"].lower()=="subject"), "Re: (no subject)")
     to   = next((h["value"] for h in last if h["name"].lower()=="from"), "")
-    create_gmail_draft(svc, to, subj, beta)
-    return render_template_string(TEMPLATE, thread=thread, thread_id=thread_id, draft=draft, output=output)
+
+    def generate():
+        output = ""
+        stream = client.chat.completions.create(
+            model=MODEL,
+            temperature=0.3,
+            messages=[{"role": "user", "content": prompt}],
+            stream=True,
+        )
+        for chunk in stream:
+            text = chunk.choices[0].delta.get("content", "")
+            output += text
+            yield text
+        beta = output.split("Beta", 1)[-1].strip()
+        create_gmail_draft(svc, to, subj, beta)
+
+    return Response(stream_with_context(generate()), mimetype="text/plain")
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=7860, debug=True)
