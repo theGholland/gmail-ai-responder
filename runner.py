@@ -16,7 +16,8 @@ app = Flask(__name__)
 def gmail_service():
     creds = None
     if os.path.exists("token.pickle"):
-        creds = pickle.load(open("token.pickle","rb"))
+        with open("token.pickle", "rb") as f:
+            creds = pickle.load(f)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -28,7 +29,8 @@ def gmail_service():
             auth_code = input("Enter the authorization code: ")
             flow.fetch_token(code=auth_code)
             creds = flow.credentials
-        pickle.dump(creds, open("token.pickle","wb"))
+        with open("token.pickle", "wb") as f:
+            pickle.dump(creds, f)
     return build("gmail","v1",credentials=creds)
 
 def thread_text(svc, thread_id):
