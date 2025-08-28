@@ -7,7 +7,7 @@ from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
-import base64, email, os, pickle, re, logging
+import base64, email, os, pickle, re, logging, textwrap
 from bs4 import BeautifulSoup
 import dotenv
 
@@ -224,15 +224,16 @@ def madlibs():
         return "Missing thread_id", 400
 
     thread, th = thread_text(svc, thread_id)
-    prompt = (
-        f"You are a communication expert and an excellent poker player.\nTHREAD: <<<{thread}>>>\n"
-        "Identify the tone of the message, infer the type of person they are using Myers Briggs personailty types, listed under 'Tone:' and 'Personality:'."
-        " Identify the type of poker play they embody; 1. Loose and Passive, 2. Loose and Aggressive, 3. Tight and Aggressive, or 4. Tight and Passive; and list it under 'Feeling:'."
-        " Also list the type of poker play that comes before and after what was listed under "Feeling" - if they are feeling like a 4, list 3 and 1. Do this under 'Response Types:'."
-        " Determine their explicitly stated wants, and determine their implicit needs based on how they speak. List these under 'Needs:' as bullet points."
-        " Then craft two fill-in-the-blank replies that will be well-received by the Personality type, under 'Template:'. Reply will address every Need,"
-        " using [placeholders] for missing details and asserting how issues will be resolved. Ensure the first reply embodies the elements of Response Type 1, and the second reply embodies the elements of Response Type 2."
-    )
+    prompt = textwrap.dedent(f"""\
+        You are a communication expert and an excellent poker player.
+        THREAD: <<<{thread}>>>
+        Identify the tone of the message, infer the type of person they are using Myers Briggs personailty types, listed under 'Tone:' and 'Personality:'.
+        Identify the type of poker play they embody; 1. Loose and Passive, 2. Loose and Aggressive, 3. Tight and Aggressive, or 4. Tight and Passive; and list it under 'Feeling:'.
+        Also list the type of poker play that comes before and after what was listed under "Feeling" - if they are feeling like a 4, list 3 and 1. Do this under 'Response Types:'.
+        Determine their explicitly stated wants, and determine their implicit needs based on how they speak. List these under 'Needs:' as bullet points.
+        Then craft two fill-in-the-blank replies that will be well-received by the Personality type, under 'Template:'. Reply will address every Need,
+        using [placeholders] for missing details and asserting how issues will be resolved. Ensure the first reply embodies the elements of Response Type 1, and the second reply embodies the elements of Response Type 2.
+    """)
     client = OpenAI(base_url=LLM_URL, api_key="ollama")
     last = th["messages"][-1]["payload"]["headers"]
     subj = next((h["value"] for h in last if h["name"].lower()=="subject"), "Re: (no subject)")
