@@ -150,11 +150,11 @@ def index():
         .get("threads", [])
     )
     thread_id = request.args.get("thread_id")
-    get_thread_text = thread_text  # alias to avoid shadowing
     thread_text = "No threads found."
+    get_thread_text = thread_text  # alias to avoid shadowing
     if not thread_id and threads:
         thread_id = threads[0]["id"]
-    #thread_text = ""
+    thread_text = ""
     text = ""
     if thread_id:
         thread_text, _ = globals()["thread_text"](svc, thread_id) #get_thread_text(svc, thread_id)
@@ -226,7 +226,7 @@ def madlibs():
     thread, th = thread_text(svc, thread_id)
     prompt = (
         f"You are an email assistant.\nTHREAD: <<<{thread}>>>\n"
-        "List the top few things the sender wants or needs under 'Needs:' as bullet points."
+        "Identify and list the things the sender wants or needs under 'Needs:' as bullet points."
         " Then craft a fill-in-the-blank reply under 'Template:' that addresses every need,"
         " using [placeholders] for missing details and asserting how issues will be resolved."
     )
