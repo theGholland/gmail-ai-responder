@@ -101,6 +101,7 @@ TEMPLATE = """
     <input name="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)" style="width:100%;"/>
     <input type="hidden" name="thread_id" value="{{thread_id or ""}}"/>
     <button>Coach</button>
+    <button type="button" id="madlibsBtn">Mad Libs</button>
   </form>
   <div style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{thread or "Thread will appear here."}}</div>
   <div id="output" style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{output or "Model output will appear here."}}</div>
@@ -112,6 +113,20 @@ form.addEventListener('submit', async (e) => {
   const output = document.getElementById('output');
   output.textContent = "";
   const resp = await fetch('/coach', { method: 'POST', body: new FormData(form) });
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    output.textContent += decoder.decode(value);
+  }
+});
+
+const madlibsBtn = document.getElementById('madlibsBtn');
+madlibsBtn.addEventListener('click', async () => {
+  const output = document.getElementById('output');
+  output.textContent = "";
+  const resp = await fetch('/madlibs', { method: 'POST', body: new FormData(form) });
   const reader = resp.body.getReader();
   const decoder = new TextDecoder();
   while (true) {
@@ -188,6 +203,47 @@ def coach():
             create_gmail_draft(svc, to, subj, beta)
         else:
             raise ValueError("Model output missing 'Beta' section")
+
+    return Response(stream_with_context(generate()), mimetype="text/plain")
+
+@app.route("/madlibs", methods=["POST"])
+def madlibs():
+    svc = gmail_service()
+    thread_id = request.form.get("thread_id")
+
+    if thread_id is None:
+        return "Missing thread_id", 400
+
+    thread, th = thread_text(svc, thread_id)
+    prompt = (
+        f"You are an email assistant.\nTHREAD: <<<{thread}>>>\n"
+        "List the top few things the sender wants or needs under 'Needs:' as bullet points."
+        " Then craft a fill-in-the-blank reply under 'Template:' that addresses every need,"
+        " using [placeholders] for missing details and asserting how issues will be resolved."
+    )
+    client = OpenAI(base_url=LLM_URL, api_key="ollama")
+    last = th["messages"][-1]["payload"]["headers"]
+    subj = next((h["value"] for h in last if h["name"].lower()=="subject"), "Re: (no subject)")
+    to   = next((h["value"] for h in last if h["name"].lower()=="from"), "")
+
+    def generate():
+        output = ""
+        stream = client.chat.completions.create(
+            model=MODEL,
+            temperature=0.3,
+            messages=[{"role": "user", "content": prompt}],
+            stream=True,
+        )
+        for chunk in stream:
+            text = getattr(chunk.choices[0].delta, "content", "")
+            output += text
+            yield text
+        match = re.search(r"(?s)Template\s*[:\-]?\s*(.*)", output)
+        template = match.group(1).strip() if match else None
+        if template:
+            create_gmail_draft(svc, to, subj, template)
+        else:
+            raise ValueError("Model output missing 'Template' section")
 
     return Response(stream_with_context(generate()), mimetype="text/plain")
 
