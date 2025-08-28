@@ -215,7 +215,7 @@ def coach():
 
     return Response(stream_with_context(generate()), mimetype="text/plain")
 
-@app.route("/madlibs", methods=["POST"])
+@app.route("/identify", methods=["POST"])
 def madlibs():
     svc = gmail_service()
     thread_id = request.form.get("thread_id")
@@ -225,9 +225,9 @@ def madlibs():
 
     thread, th = thread_text(svc, thread_id)
     prompt = (
-        f"You are an email assistant.\nTHREAD: <<<{thread}>>>\n"
-        "Identify and list the things the sender wants or needs under 'Needs:' as bullet points."
-        " Then craft a fill-in-the-blank reply under 'Template:' that addresses every need,"
+        f"You are a communication expert.\nTHREAD: <<<{thread}>>>\n"
+        "Identify the tone of the message, infer the type of person they are using Myers Briggs personailty types, listed under 'Tone:' and 'Personality:'. Determine their explicitly stated wants, and determine their implicit needs based on how they speak. List these under 'Needs:' as bullet points."
+        " Then craft a fill-in-the-blank reply that will be well-received by the Personality type, under 'Template:'. Reply will address every Need,"
         " using [placeholders] for missing details and asserting how issues will be resolved."
     )
     client = OpenAI(base_url=LLM_URL, api_key="ollama")
