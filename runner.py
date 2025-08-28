@@ -154,6 +154,7 @@ def index():
     thread_text = "No threads found."
     if not thread_id and threads:
         thread_id = threads[0]["id"]
+    text = ""
     if thread_id:
         thread_text, _ = get_thread_text(svc, thread_id)
     return render_template_string(
