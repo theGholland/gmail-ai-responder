@@ -146,7 +146,7 @@ def index():
     thread_id = request.args.get("thread_id")
     if not thread_id and threads:
         thread_id = threads[0]["id"]
-    thread_display = ""
+    text = ""
     if thread_id:
         text, _ = thread_text(svc, thread_id)
     return render_template_string(
