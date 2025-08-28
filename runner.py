@@ -146,12 +146,12 @@ def index():
     thread_id = request.args.get("thread_id")
     if not thread_id and threads:
         thread_id = threads[0]["id"]
-    thread_display = ""
+    thread_text = ""
     if thread_id:
-        text, _ = thread_text(svc, thread_id)
+        thread_text, _ = globals()["thread_text"](svc, thread_id)
     return render_template_string(
         TEMPLATE,
-        thread=text,
+        thread=thread_text,
         thread_id=thread_id,
         draft="",
         output="",
