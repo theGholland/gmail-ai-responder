@@ -101,7 +101,7 @@ TEMPLATE = """
     <input name="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)" style="width:100%;"/>
     <input type="hidden" name="thread_id" value="{{thread_id or ""}}"/>
     <button>Coach</button>
-    <button type="button" id="madlibsBtn">Mad Libs</button>
+    <button type="button" id="madlibsBtn">Identify</button>
   </form>
   <div style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{thread or "Thread will appear here."}}</div>
   <div id="output" style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{output or "Model output will appear here."}}</div>
@@ -215,7 +215,7 @@ def coach():
 
     return Response(stream_with_context(generate()), mimetype="text/plain")
 
-@app.route("/identify", methods=["POST"])
+@app.route("/madlibs", methods=["POST"])
 def madlibs():
     svc = gmail_service()
     thread_id = request.form.get("thread_id")
