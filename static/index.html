@@ -6,10 +6,84 @@
   <link rel="stylesheet" href="/static/vaporwave.css">
 </head>
 <body class="vaporwave">
-  <div id="root"></div>
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-  <script type="text/babel" src="/static/app.jsx"></script>
+  <div class="grid-container">
+    <div>
+      <input id="q" value="in:inbox" placeholder="search" />
+      <button id="fetchBtn">Fetch</button>
+      <ul id="threads"></ul>
+    </div>
+    <div>
+      <textarea id="draft" placeholder="Your draft…"></textarea>
+      <input id="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)" />
+      <button id="coachBtn">Coach</button>
+      <button id="madlibsBtn">Identify</button>
+    </div>
+    <div id="threadText" class="thread-box">Thread will appear here.</div>
+    <div id="output" class="output-box">Model output will appear here.</div>
+  </div>
+  <script>
+    async function fetchThreads() {
+      const q = document.getElementById('q').value;
+      const resp = await fetch(`/api/threads?q=${encodeURIComponent(q)}`);
+      const data = await resp.json();
+      const list = document.getElementById('threads');
+      list.innerHTML = '';
+      data.forEach(t => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#';
+        a.textContent = t.snippet;
+        a.addEventListener('click', e => { e.preventDefault(); selectThread(t.id); });
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+      if (data.length) {
+        selectThread(data[0].id);
+      }
+    }
+
+    async function selectThread(id) {
+      window.threadId = id;
+      const resp = await fetch(`/api/thread/${id}`);
+      const data = await resp.json();
+      document.getElementById('threadText').textContent = data.thread || 'Thread will appear here.';
+    }
+
+    async function streamToElem(resp, elemId) {
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value);
+        document.getElementById(elemId).textContent = buf;
+      }
+    }
+
+    async function handleCoach() {
+      document.getElementById('output').textContent = '';
+      const form = new FormData();
+      form.append('draft', document.getElementById('draft').value);
+      form.append('goal', document.getElementById('goal').value);
+      form.append('thread_id', window.threadId || '');
+      const resp = await fetch('/coach', { method: 'POST', body: form });
+      await streamToElem(resp, 'output');
+    }
+
+    async function handleMadlibs() {
+      document.getElementById('output').textContent = '';
+      const form = new FormData();
+      form.append('thread_id', window.threadId || '');
+      const resp = await fetch('/madlibs', { method: 'POST', body: form });
+      await streamToElem(resp, 'output');
+    }
+
+    document.getElementById('fetchBtn').addEventListener('click', fetchThreads);
+    document.getElementById('coachBtn').addEventListener('click', handleCoach);
+    document.getElementById('madlibsBtn').addEventListener('click', handleMadlibs);
+
+    fetchThreads();
+  </script>
 </body>
 </html>
