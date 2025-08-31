@@ -1,9 +1,7 @@
 # app.py
 # pip install flask google-api-python-client google-auth-oauthlib openai
-from flask import Flask, request, render_template_string, Response, stream_with_context
-from urllib.parse import quote_plus
+from flask import Flask, request, send_from_directory, jsonify, Response, stream_with_context
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
@@ -81,75 +79,16 @@ def create_gmail_draft(svc, to_addr, subj, body):
     raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
     return svc.users().drafts().create(userId="me", body={"message":{"raw":raw}}).execute()
 
-TEMPLATE = """
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Tone Coach</title>
-  <link rel="stylesheet" href="/static/vaporwave.css">
-</head>
-<body class="vaporwave">
-  <div class="grid-container">
-    <form method="get" action="/">
-      <input name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)" value="{{ q|e }}"/>
-      <button>Fetch</button>
-      {% if threads %}
-      <ul>
-      {% for t in threads %}
-        <li><a href="/?q={{ quote_plus(q)|e }}&thread_id={{t['id']}}">{{t['snippet']}}</a></li>
-      {% endfor %}
-      </ul>
-      {% endif %}
-    </form>
-    <form id="coachForm" method="post" action="/coach">
-      <textarea name="draft" placeholder="Your draft…">{{draft or ""}}</textarea>
-      <input name="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)"/>
-      <input type="hidden" name="thread_id" value="{{thread_id or ""}}"/>
-      <button>Coach</button>
-      <button type="button" id="madlibsBtn">Identify</button>
-    </form>
-    <div class="thread-box">{{thread or "Thread will appear here."}}</div>
-    <div id="output" class="output-box">{{output or "Model output will appear here."}}</div>
-  </div>
-  <script>
-const form = document.getElementById('coachForm');
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const output = document.getElementById('output');
-  output.textContent = "";
-  const resp = await fetch('/coach', { method: 'POST', body: new FormData(form) });
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    output.textContent += decoder.decode(value);
-  }
-});
-
-const madlibsBtn = document.getElementById('madlibsBtn');
-  madlibsBtn.addEventListener('click', async () => {
-    const output = document.getElementById('output');
-    output.textContent = "";
-    const resp = await fetch('/madlibs', { method: 'POST', body: new FormData(form) });
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      output.textContent += decoder.decode(value);
-    }
-  });
-  </script>
-</body>
-</html>
-"""
 
 @app.route("/", methods=["GET"])
-def index():
+def serve_ui():
+    return send_from_directory("static", "index.html")
+
+
+@app.route("/api/threads", methods=["GET"])
+def api_threads():
     svc = gmail_service()
-    q = request.args.get("q") or "in:inbox"            # default heuristic
+    q = request.args.get("q") or "in:inbox"
     threads = (
         svc.users()
         .threads()
@@ -157,25 +96,14 @@ def index():
         .execute()
         .get("threads", [])
     )
-    thread_id = request.args.get("thread_id")
-    thread_text = "No threads found."
-    get_thread_text = thread_text  # alias to avoid shadowing
-    if not thread_id and threads:
-        thread_id = threads[0]["id"]
-    thread_text = ""
-    text = ""
-    if thread_id:
-        thread_text, _ = globals()["thread_text"](svc, thread_id) #get_thread_text(svc, thread_id)
-    return render_template_string(
-        TEMPLATE,
-        thread=thread_text,
-        thread_id=thread_id,
-        draft="",
-        output="",
-        threads=threads,
-        q=q,
-        quote_plus=quote_plus,
-    )
+    return jsonify(threads)
+
+
+@app.route("/api/thread/<thread_id>", methods=["GET"])
+def api_thread(thread_id):
+    svc = gmail_service()
+    text, _ = thread_text(svc, thread_id)
+    return jsonify({"thread": text})
 
 @app.route("/coach", methods=["POST"])
 def coach():
