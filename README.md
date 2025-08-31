@@ -8,7 +8,7 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 
 * **Gmail integration.** `runner.py` authenticates with Google via OAuth, retrieves thread contents and can create reply drafts.
 * **Local model interaction.** The assembled prompt (thread, draft, and goal) is sent to a locally hosted model through an OpenAI-compatible endpoint and the model's critique is returned.
-* **Web interface.** A React front-end talks to Flask endpoints to fetch threads, submit drafts/goals, and stream coaching output.
+* **Web interface.** A small vanilla JS front-end talks to Flask endpoints to fetch threads, submit drafts/goals, and stream coaching output.
 * **Mad Libs reply.** A second button analyzes the thread for the sender's needs and generates a fill‑in‑the‑blank reply addressing them.
 * **Security posture.** Designed for localhost-only deployment; start with read-only mail scopes and never commit secrets.
 
@@ -49,7 +49,7 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
     Use scope `gmail.readonly` until you enable draft creation.
    * For Outlook/Microsoft 365, register an app in Azure AD and set `AZURE_APP_CLIENT_ID` (device‑code flow is simplest during development).
 
-5. **Run your app.** The starter assumes a Flask app binding to `127.0.0.1:7860`. Visit that URL to load the React UI, fetch a thread, paste a draft, and call the local LLM.
+5. **Run your app.** The starter assumes a Flask app binding to `127.0.0.1:7860`. Visit that URL to load the web UI, fetch a thread, paste a draft, and call the local LLM.
 
 ### Creating Gmail `credentials.json`
 
