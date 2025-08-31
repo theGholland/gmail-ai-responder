@@ -83,30 +83,36 @@ def create_gmail_draft(svc, to_addr, subj, body):
 
 TEMPLATE = """
 <!doctype html>
-<title>Tone Coach</title>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-family:system-ui;">
-  <form method="get" action="/">
-    <input style="width:70%" name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)" value="{{ q|e }}"/>
-    <button>Fetch</button>
-    {% if threads %}
-    <ul>
-    {% for t in threads %}
-      <li><a href="/?q={{ quote_plus(q)|e }}&thread_id={{t['id']}}">{{t['snippet']}}</a></li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-  </form>
-  <form id="coachForm" method="post" action="/coach">
-    <textarea name="draft" placeholder="Your draft…" style="width:100%;height:8rem;">{{draft or ""}}</textarea>
-    <input name="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)" style="width:100%;"/>
-    <input type="hidden" name="thread_id" value="{{thread_id or ""}}"/>
-    <button>Coach</button>
-    <button type="button" id="madlibsBtn">Identify</button>
-  </form>
-  <div style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{thread or "Thread will appear here."}}</div>
-  <div id="output" style="white-space:pre-wrap;border:1px solid #ddd;padding:0.75rem;">{{output or "Model output will appear here."}}</div>
-</div>
-<script>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tone Coach</title>
+  <link rel="stylesheet" href="/static/vaporwave.css">
+</head>
+<body class="vaporwave">
+  <div class="grid-container">
+    <form method="get" action="/">
+      <input name="q" placeholder="search (e.g., subject:kickoff newer_than:7d)" value="{{ q|e }}"/>
+      <button>Fetch</button>
+      {% if threads %}
+      <ul>
+      {% for t in threads %}
+        <li><a href="/?q={{ quote_plus(q)|e }}&thread_id={{t['id']}}">{{t['snippet']}}</a></li>
+      {% endfor %}
+      </ul>
+      {% endif %}
+    </form>
+    <form id="coachForm" method="post" action="/coach">
+      <textarea name="draft" placeholder="Your draft…">{{draft or ""}}</textarea>
+      <input name="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)"/>
+      <input type="hidden" name="thread_id" value="{{thread_id or ""}}"/>
+      <button>Coach</button>
+      <button type="button" id="madlibsBtn">Identify</button>
+    </form>
+    <div class="thread-box">{{thread or "Thread will appear here."}}</div>
+    <div id="output" class="output-box">{{output or "Model output will appear here."}}</div>
+  </div>
+  <script>
 const form = document.getElementById('coachForm');
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -123,19 +129,21 @@ form.addEventListener('submit', async (e) => {
 });
 
 const madlibsBtn = document.getElementById('madlibsBtn');
-madlibsBtn.addEventListener('click', async () => {
-  const output = document.getElementById('output');
-  output.textContent = "";
-  const resp = await fetch('/madlibs', { method: 'POST', body: new FormData(form) });
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    output.textContent += decoder.decode(value);
-  }
-});
-</script>
+  madlibsBtn.addEventListener('click', async () => {
+    const output = document.getElementById('output');
+    output.textContent = "";
+    const resp = await fetch('/madlibs', { method: 'POST', body: new FormData(form) });
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      output.textContent += decoder.decode(value);
+    }
+  });
+  </script>
+</body>
+</html>
 """
 
 @app.route("/", methods=["GET"])
