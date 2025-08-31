@@ -9,17 +9,53 @@
   <div class="grid-container">
     <div>
       <input class="search" value="in:inbox" placeholder="search" />
-      <button class="btn">Fetch</button>
+      <button class="btn fetch-btn">Fetch</button>
       <ul class="threads"></ul>
     </div>
     <div>
       <textarea placeholder="Your draft…"></textarea>
       <input class="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)" />
-      <button class="btn">Coach</button>
-      <button class="btn">Identify</button>
+      <button class="btn coach-btn">Coach</button>
+      <button class="btn identify-btn">Identify</button>
     </div>
     <div class="thread-box">Thread will appear here.</div>
     <div class="output-box">Model output will appear here.</div>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const fetchBtn = document.querySelector('.fetch-btn');
+      const threadList = document.querySelector('.threads');
+      const threadBox = document.querySelector('.thread-box');
+
+      fetchBtn.addEventListener('click', () => {
+        const q = document.querySelector('input.search').value;
+        fetch(`/api/threads?q=${encodeURIComponent(q)}`)
+          .then(r => r.json())
+          .then(threads => {
+            threadList.innerHTML = '';
+            threads.forEach(t => {
+              const li = document.createElement('li');
+              const a = document.createElement('a');
+              a.href = '#';
+              a.dataset.id = t.id;
+              a.textContent = t.snippet || t.id;
+              li.appendChild(a);
+              threadList.appendChild(li);
+            });
+          });
+      });
+
+      threadList.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        if (!id) return;
+        e.preventDefault();
+        fetch(`/api/thread/${id}`)
+          .then(r => r.json())
+          .then(data => {
+            threadBox.textContent = data.thread;
+          });
+      });
+    });
+  </script>
 </body>
 </html>
