@@ -73,6 +73,15 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 * Otherwise Google will block authorization with `Error 403: access_denied`.
 * The best way to do this is to visit Google Auth Platform / Audience and add yourself as a test user
 
+### Troubleshooting `invalid_grant` refresh errors
+
+If the app logs `google.auth.exceptions.RefreshError: ('invalid_grant: Token has been expired or revoked.')`:
+
+* Delete the cached token file (e.g., `token.pickle`) so the app runs the OAuth flow again.
+* Re-authorize when prompted to obtain a fresh refresh token.
+* Ensure the OAuth client requests offline access (`access_type=offline`).
+* Verify your system clock is accurate and the user hasn't revoked access or changed their Google password.
+
 ## Security model
 
 * Keep the LLM server and the Flask app bound to **loopback only** (`127.0.0.1`).
