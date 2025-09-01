@@ -70,7 +70,7 @@ body.vaporwave{
     repeating-linear-gradient(to bottom, #000 0 10px, transparent 10px 16px);
   -webkit-mask-composite: source-in; /* keep stripes inside the circle */
           mask-composite: intersect;
-  animation: sunFloat 16s ease-in-out infinite alternate;
+  animation: sunFloat 16s steps(120) infinite alternate;
 }
 
 /* Horizon haze sits between sky and grid to soften the join */
@@ -98,6 +98,7 @@ body.vaporwave::after{
   background:
     repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 10px, rgba(1,241,248,0) 10px 300px),
     repeating-linear-gradient(to bottom, rgba(1,241,248,.9) 0 10px, rgba(1,241,248,0) 10px 300px);
+  background-size: 300px 300px, 300px 300px;
   filter: drop-shadow(0 0 10px rgba(1,241,248,.4)) drop-shadow(0 0 14px rgba(1,241,248,.32));
 
   transform-origin: 50% 100%;
@@ -107,7 +108,7 @@ body.vaporwave::after{
   -webkit-mask: linear-gradient(to top, black 0 58%, transparent 90%);
           mask: linear-gradient(to top, black 0 58%, transparent 90%);
 
-  animation: gridDrift 20s linear infinite;
+  animation: gridDrift 20s steps(200) infinite;
 }
 
 @supports not ((mask: linear-gradient(#000,#000)) or (-webkit-mask: linear-gradient(#000,#000))){
