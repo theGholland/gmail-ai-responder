@@ -1,53 +1,137 @@
 /* /static/vaporwave.css */
 
+/* ==== Vaporwave background with moving neon grid + sunset ==== */
+
 :root{
-  --bg-1:#ff9de6;
-  --bg-2:#a1c4fd;
-  --bg-3:#c2ffd8;
-  --bg-4:#f3d9ff;
   --ink:#0b0b10;
-  --ink-dim:#1a1b22;
-  --glass:rgba(255,255,255,0.18);
-  --glass-strong:rgba(255,255,255,0.28);
+  --radius:18px;
+  --shadow:0 10px 30px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.06);
   --stroke:rgba(255,255,255,0.35);
   --neon-pink:#ff71ce;
   --neon-cyan:#01f1f8;
-  --neon-yellow:#fffb96;
-  --radius:18px;
-  --shadow:0 10px 30px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.06);
+  --sun-core:#ffd29a;
+  --sun-rim:#ff6a4d;
+  --sky-a:#5824ff;     /* deep violet top */
+  --sky-b:#a14bff;     /* magenta */
+  --sky-c:#ff8c42;     /* orange horizon */
+  --haze:#ffd0f0;      /* subtle mist */
 }
 
-/* Base */
 *{box-sizing:border-box}
 html,body{height:100%}
+
+/* Sky gradient + gentle motion retained */
 body.vaporwave{
   margin:0;
   color:var(--ink);
   font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,0.35), transparent 60%) no-repeat,
-              linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3), var(--bg-4));
-  background-size: 140% 140%;
-  animation: bg-pan 20s ease-in-out infinite alternate;
+  background:
+    radial-gradient(1200px 800px at 50% 10%, rgba(255,255,255,0.25), transparent 60%) no-repeat,
+    linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) 35%, var(--sky-c) 100%);
+  background-size: 100% 100%, 100% 100%;
+  min-height:100vh;
   overflow-x:hidden;
+  position:relative;
 }
 
-/* Subtle animated layers */
-.bg-motion{
-  position:fixed; inset:0; pointer-events:none; z-index:-1;
+/* Retro sunset orb with soft glow and discrete scanlines */
+.bg-sunset{
+  position:fixed; inset:0 auto auto 50%;
+  transform:translateX(-50%);
+  top: 12vh;
+  width: clamp(36vmin, 42vmin, 48vmin);
+  height: clamp(36vmin, 42vmin, 48vmin);
+  border-radius:50%;
+  z-index:-1;
   background:
-    radial-gradient(800px 800px at 10% 80%, rgba(255,113,206,0.18), transparent 60%),
-    radial-gradient(700px 700px at 90% 20%, rgba(1,241,248,0.16), transparent 60%);
-  filter: blur(8px) saturate(120%);
-  animation: floaty 24s ease-in-out infinite alternate;
+    radial-gradient(circle at 50% 60%,
+      #fff6d2 0%,
+      var(--sun-core) 38%,
+      #ff9c66 62%,
+      var(--sun-rim) 85%,
+      rgba(255,106,77,0.0) 100%);
+  box-shadow:
+    0 0 120px rgba(255,166,102,0.45),
+    0 0 240px rgba(255,106,77,0.30),
+    0 0 400px rgba(255,113,206,0.18);
+  /* scanline mask */
+  -webkit-mask:
+    radial-gradient(circle at 50% 50%, #000 65%, transparent 66%) /* crisp circular edge */ ,
+    repeating-linear-gradient(to bottom, #000 0 10px, transparent 10px 16px);
+  -webkit-mask-composite: source-in; /* keep stripes inside the circle */
+          mask-composite: intersect;
+  animation: sunFloat 16s ease-in-out infinite alternate;
 }
-.bg-glow{
-  position:fixed; inset:-10vmax; pointer-events:none; z-index:-2; opacity:0.45;
-  mix-blend-mode: screen;
-  background: radial-gradient(closest-side, rgba(255,113,206,0.22), transparent 70%);
-  animation: drift 40s linear infinite;
+
+/* Oblique neon grid “floor” with parallax motion toward the viewer */
+.bg-grid{
+  position:fixed; inset:auto -10vw -20vh -10vw; /* overscan for rotation crop */
+  height: 80vh;
+  z-index:-2;
+  transform-origin: 50% 100%;
+  transform:
+    perspective(900px)
+    rotateX(68deg)
+    rotateZ(-16deg)
+    translateY(6vh);
+  background:
+    /* vertical lines */
+    repeating-linear-gradient(
+      to right,
+      rgba(1,241,248,0.75) 0 2px,
+      rgba(1,241,248,0.0) 2px 120px
+    ),
+    /* horizontal lines */
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,113,206,0.75) 0 2px,
+      rgba(255,113,206,0.0) 2px 120px
+    ),
+    /* ground fade */
+    linear-gradient( to top, rgba(0,0,0,0.55), rgba(0,0,0,0.0) 65% );
+  filter: drop-shadow(0 0 12px rgba(1,241,248,0.45))
+          drop-shadow(0 0 18px rgba(255,113,206,0.35));
+  animation: gridDrift 18s linear infinite;
 }
-.bg-glow-a{ animation-duration: 36s; transform: translate(-10%, -5%) }
-.bg-glow-b{ animation-duration: 52s; background: radial-gradient(closest-side, rgba(1,241,248,0.20), transparent 70%); }
+
+/* Subtle horizon haze that helps the sun sit in the scene */
+body.vaporwave::after{
+  content:"";
+  position:fixed; inset:auto 0 30vh 0;
+  height: 24vh;
+  z-index:-1;
+  background: radial-gradient(60% 100% at 50% 0%,
+              rgba(255,255,255,0.35), rgba(255,255,255,0.0) 70%);
+  filter: blur(8px) saturate(115%);
+  pointer-events:none;
+}
+
+/* Keyframes */
+@keyframes gridDrift{
+  0%{
+    background-position:
+      0px 0px,   /* verticals */
+      0px 0px,   /* horizontals */
+      0 0;       /* fade */
+  }
+  100%{
+    /* move both layers to simulate forward motion */
+    background-position:
+      120px 240px,
+      0px 240px,
+      0 0;
+  }
+}
+
+@keyframes sunFloat{
+  0%{ transform: translateX(-50%) translateY(0) scale(1.00); filter: blur(0.4px); }
+  100%{ transform: translateX(-50%) translateY(-1.8vh) scale(1.015); filter: blur(0.6px); }
+}
+
+/* =========================================================
+   The rest of your UI styling from my previous message can remain.
+   Buttons, panels, grid layout, etc., do not need any changes.
+   ========================================================= */
 
 /* Header & Footer */
 .site-header{
@@ -308,18 +392,4 @@ textarea{
   }
   .field-row{ flex-direction:column; align-items:stretch; }
   .btn-row{ flex-wrap:wrap; }
-}
-
-/* Keyframes */
-@keyframes bg-pan{
-  0%{ background-position: 0% 0%; }
-  100%{ background-position: 100% 100%; }
-}
-@keyframes floaty{
-  0%{ transform: translate3d(-1%, 0, 0) }
-  100%{ transform: translate3d(1%, 0, 0) }
-}
-@keyframes drift{
-  0%{ transform: translate3d(-8%, -6%, 0) rotate(0deg); }
-  100%{ transform: translate3d(6%, 8%, 0) rotate(360deg); }
 }
