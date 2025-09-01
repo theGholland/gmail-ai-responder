@@ -6,12 +6,38 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
 import base64, email, os, pickle, re, logging
+import tiktoken
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import dotenv
 
 dotenv.load_dotenv()
 logging.basicConfig(level=logging.INFO)
+
+TOKENIZER = None
+
+
+def log_token_count(text: str, label: str) -> int:
+    global TOKENIZER
+    if TOKENIZER is None:
+        try:
+            TOKENIZER = tiktoken.get_encoding("cl100k_base")
+        except Exception as e:  # pragma: no cover - tokenizer optional
+            logging.warning(f"Could not load tokenizer: {e}")
+            return 0
+    tokens = TOKENIZER.encode(text)
+    count = len(tokens)
+    logging.info(f"{label}: {count} tokens")
+    return count
+
+
+def log_openai_usage(usage) -> None:
+    logging.info(
+        "OpenAI usage - prompt: %s tokens, completion: %s tokens, total: %s tokens",
+        usage.prompt_tokens,
+        usage.completion_tokens,
+        usage.total_tokens,
+    )
 
 SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
 LLM_URL = os.getenv("LLM_URL", "http://127.0.0.1:11434/v1")                      # Ollama default
@@ -203,16 +229,29 @@ def coach():
 
     def generate():
         output = ""
+        usage_info = None
+        stream_kwargs = {}
+        if USE_OPENAI:
+            stream_kwargs["stream_options"] = {"include_usage": True}
         stream = client.chat.completions.create(
             model=model,
             temperature=0.3,
             messages=[{"role": "user", "content": prompt}],
             stream=True,
+            **stream_kwargs,
         )
         for chunk in stream:
             text = getattr(chunk.choices[0].delta, "content", "")
-            output += text
-            yield text
+            if text:
+                output += text
+                yield text
+            if USE_OPENAI and getattr(chunk, "usage", None) is not None:
+                usage_info = chunk.usage
+        if usage_info:
+            log_openai_usage(usage_info)
+        else:
+            log_token_count(prompt, "Prompt tokens")
+            log_token_count(output, "Completion tokens")
         match = re.search(r"(?s)(?:^|\n)Beta\s*[:\-]?\s*(.*)", output)
         beta = match.group(1).strip() if match else None
         if beta:
@@ -248,16 +287,29 @@ def madlibs():
 
     def generate():
         output = ""
+        usage_info = None
+        stream_kwargs = {}
+        if USE_OPENAI:
+            stream_kwargs["stream_options"] = {"include_usage": True}
         stream = client.chat.completions.create(
             model=model,
             temperature=0.3,
             messages=[{"role": "user", "content": prompt}],
             stream=True,
+            **stream_kwargs,
         )
         for chunk in stream:
             text = getattr(chunk.choices[0].delta, "content", "")
-            output += text
-            yield text
+            if text:
+                output += text
+                yield text
+            if USE_OPENAI and getattr(chunk, "usage", None) is not None:
+                usage_info = chunk.usage
+        if usage_info:
+            log_openai_usage(usage_info)
+        else:
+            log_token_count(prompt, "Prompt tokens")
+            log_token_count(output, "Completion tokens")
         match = re.search(r"(?s)Template\s*[:\-]?\s*(.*)", output)
         template = match.group(1).strip() if match else None
         if template:
