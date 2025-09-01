@@ -69,6 +69,11 @@
       const fetchBtn = document.querySelector('.fetch-btn');
       const threadList = document.querySelector('.threads');
       const threadBox = document.querySelector('.thread-box');
+      const coachBtn = document.querySelector('.coach-btn');
+      const identifyBtn = document.querySelector('.identify-btn');
+      const outputBox = document.querySelector('.output-box');
+      const draftInput = document.querySelector('#draft');
+      const goalInput = document.querySelector('.goal');
 
       fetchBtn.addEventListener('click', () => {
         const q = document.querySelector('input.search').value;
@@ -99,6 +104,51 @@
             threadList.querySelectorAll('a').forEach(a => a.classList.remove('active'));
             e.target.classList.add('active');
           });
+      });
+
+      async function streamResponse(resp) {
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        outputBox.textContent = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          outputBox.textContent += decoder.decode(value, { stream: true });
+        }
+      }
+
+      coachBtn.addEventListener('click', async () => {
+        const active = threadList.querySelector('a.active');
+        if (!active) return alert('Select a thread first');
+        const form = new FormData();
+        form.append('thread_id', active.dataset.id);
+        form.append('draft', draftInput.value);
+        form.append('goal', goalInput.value);
+        coachBtn.disabled = true;
+        coachBtn.querySelector('span:last-child').textContent = 'Coaching…';
+        try {
+          const resp = await fetch('/coach', { method: 'POST', body: form });
+          await streamResponse(resp);
+        } finally {
+          coachBtn.disabled = false;
+          coachBtn.querySelector('span:last-child').textContent = 'Coach';
+        }
+      });
+
+      identifyBtn.addEventListener('click', async () => {
+        const active = threadList.querySelector('a.active');
+        if (!active) return alert('Select a thread first');
+        const form = new FormData();
+        form.append('thread_id', active.dataset.id);
+        identifyBtn.disabled = true;
+        identifyBtn.querySelector('span:last-child').textContent = 'Identifying…';
+        try {
+          const resp = await fetch('/madlibs', { method: 'POST', body: form });
+          await streamResponse(resp);
+        } finally {
+          identifyBtn.disabled = false;
+          identifyBtn.querySelector('span:last-child').textContent = 'Identify';
+        }
       });
     });
   </script>
