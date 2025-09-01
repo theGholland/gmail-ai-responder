@@ -6,6 +6,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
 import base64, email, os, pickle, re, logging
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import dotenv
 
@@ -80,6 +81,22 @@ def create_gmail_draft(svc, to_addr, subj, body):
     return svc.users().drafts().create(userId="me", body={"message":{"raw":raw}}).execute()
 
 
+def scrub_links(text: str) -> str:
+    """Replace any http(s) URL with its bare domain.
+
+    This keeps prompts concise by dropping long paths and query strings.
+    Example: ``https://linkedin.com/long/path?query=123`` -> ``linkedin.com``.
+    """
+
+    def repl(match: re.Match) -> str:
+        url = match.group(0)
+        stripped = url.rstrip('.,)')
+        trailing = url[len(stripped):]
+        return urlparse(stripped).netloc + trailing
+
+    return re.sub(r"https?://\S+", repl, text)
+
+
 @app.route("/", methods=["GET"])
 def serve_ui():
     return send_from_directory("static", "index.html")
@@ -120,6 +137,7 @@ def coach():
         return "Missing goal", 400
 
     thread, th = thread_text(svc, thread_id)
+    thread = scrub_links(thread)  # drop URL paths so the model only sees domains
     prompt = (
         f"You are a communication coach.\nA) THREAD: <<<{thread}>>>\n"
         f"B) MY DRAFT: <<<{draft}>>>\nC) GOAL: {goal}\n"
@@ -160,6 +178,7 @@ def madlibs():
         return "Missing thread_id", 400
 
     thread, th = thread_text(svc, thread_id)
+    thread = scrub_links(thread)  # drop URL paths so the model only sees domains
     prompt = (
         f"You are a communication expert.\nTHREAD: <<<{thread}>>>\n"
         "Identify the tone of the message, infer the type of person they are using Myers Briggs personailty types, listed under 'Tone:' and 'Personality:'."
