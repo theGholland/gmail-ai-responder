@@ -150,12 +150,19 @@ body.vaporwave::after{
 /* Grid layout */
 .grid-container {
   display: grid;
-  /* Allow three panels to sit side‑by‑side on typical desktop widths */
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px; /* a bit more breathing room */
   max-width: 1440px;
   margin: 0 auto;
   padding: 2rem;
+  /* Mobile‑first: stack panels vertically */
+  grid-template-columns: 1fr;
+}
+
+/* Allow panels to sit side‑by‑side on wider viewports */
+@media (min-width: 768px) {
+  .grid-container {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
 }
 
 .panel{
