@@ -31,12 +31,16 @@ def log_token_count(text: str, label: str) -> int:
     return count
 
 
-def log_openai_usage(usage) -> None:
+def log_openai_usage(usage, model: str | None = None) -> None:
+    model = model or llm_model()
+    cost = openai_cost(model, usage.prompt_tokens, usage.completion_tokens)
+    extra = f", cost: ${cost:.6f}" if cost else ""
     logging.info(
-        "OpenAI usage - prompt: %s tokens, completion: %s tokens, total: %s tokens",
+        "OpenAI usage - prompt: %s tokens, completion: %s tokens, total: %s tokens%s",
         usage.prompt_tokens,
         usage.completion_tokens,
         usage.total_tokens,
+        extra,
     )
 
 SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
@@ -45,6 +49,23 @@ MODEL  = os.getenv("MODEL", "llama3.1")                                        #
 USE_OPENAI = os.getenv("USE_OPENAI", "false").lower() == "true"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+# Pricing as of May 2024 (USD per 1K tokens)
+OPENAI_PRICING = {
+    "gpt-4o": {"prompt": 0.005, "completion": 0.015},
+    "gpt-4o-mini": {"prompt": 0.00015, "completion": 0.0006},
+    "gpt-4-turbo": {"prompt": 0.01, "completion": 0.03},
+    "gpt-3.5-turbo": {"prompt": 0.0005, "completion": 0.0015},
+}
+
+
+def openai_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
+    pricing = OPENAI_PRICING.get(model.lower())
+    if not pricing:
+        return 0.0
+    return (
+        prompt_tokens * pricing["prompt"] + completion_tokens * pricing["completion"]
+    ) / 1000
 
 
 def llm_client():
@@ -248,10 +269,13 @@ def coach():
             if USE_OPENAI and getattr(chunk, "usage", None) is not None:
                 usage_info = chunk.usage
         if usage_info:
-            log_openai_usage(usage_info)
+            log_openai_usage(usage_info, model)
         else:
-            log_token_count(prompt, "Prompt tokens")
-            log_token_count(output, "Completion tokens")
+            pt = log_token_count(prompt, "Prompt tokens")
+            ct = log_token_count(output, "Completion tokens")
+            cost = openai_cost(model, pt, ct)
+            if cost:
+                logging.info("Estimated OpenAI cost: $%.6f", cost)
         match = re.search(r"(?s)(?:^|\n)Beta\s*[:\-]?\s*(.*)", output)
         beta = match.group(1).strip() if match else None
         if beta:
@@ -306,10 +330,13 @@ def madlibs():
             if USE_OPENAI and getattr(chunk, "usage", None) is not None:
                 usage_info = chunk.usage
         if usage_info:
-            log_openai_usage(usage_info)
+            log_openai_usage(usage_info, model)
         else:
-            log_token_count(prompt, "Prompt tokens")
-            log_token_count(output, "Completion tokens")
+            pt = log_token_count(prompt, "Prompt tokens")
+            ct = log_token_count(output, "Completion tokens")
+            cost = openai_cost(model, pt, ct)
+            if cost:
+                logging.info("Estimated OpenAI cost: $%.6f", cost)
         match = re.search(r"(?s)Template\s*[:\-]?\s*(.*)", output)
         template = match.group(1).strip() if match else None
         if template:
