@@ -31,17 +31,29 @@ def log_token_count(text: str, label: str) -> int:
     return count
 
 
-def log_openai_usage(usage, model: str | None = None) -> None:
+def log_usage(
+    prompt: str, completion: str, usage, model: str | None = None
+) -> None:
+    """Log token usage and estimated cost.
+
+    If using a local model, estimate what OpenAI would have charged based on
+    token counts. When calling the OpenAI API, rely on the usage metadata the
+    API returns and skip cost estimation entirely.
+    """
     model = model or llm_model()
-    cost = openai_cost(model, usage.prompt_tokens, usage.completion_tokens)
-    extra = f", cost: ${cost:.6f}" if cost else ""
-    logging.info(
-        "OpenAI usage - prompt: %s tokens, completion: %s tokens, total: %s tokens%s",
-        usage.prompt_tokens,
-        usage.completion_tokens,
-        usage.total_tokens,
-        extra,
-    )
+    if USE_OPENAI:
+        if usage is not None:
+            logging.info(
+                "OpenAI usage - prompt: %s tokens, completion: %s tokens, total: %s tokens",
+                usage.prompt_tokens,
+                usage.completion_tokens,
+                usage.total_tokens,
+            )
+    else:
+        pt = log_token_count(prompt, "Prompt tokens")
+        ct = log_token_count(completion, "Completion tokens")
+        cost = openai_cost(model, pt, ct)
+        logging.info("Estimated OpenAI cost: $%.6f", cost)
 
 SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
 LLM_URL = os.getenv("LLM_URL", "http://127.0.0.1:11434/v1")                      # Ollama default
@@ -268,14 +280,7 @@ def coach():
                 yield text
             if USE_OPENAI and getattr(chunk, "usage", None) is not None:
                 usage_info = chunk.usage
-        if usage_info:
-            log_openai_usage(usage_info, model)
-        else:
-            pt = log_token_count(prompt, "Prompt tokens")
-            ct = log_token_count(output, "Completion tokens")
-            cost = openai_cost(model, pt, ct)
-            if cost:
-                logging.info("Estimated OpenAI cost: $%.6f", cost)
+        log_usage(prompt, output, usage_info, model)
         match = re.search(r"(?s)(?:^|\n)Beta\s*[:\-]?\s*(.*)", output)
         beta = match.group(1).strip() if match else None
         if beta:
@@ -329,14 +334,7 @@ def madlibs():
                 yield text
             if USE_OPENAI and getattr(chunk, "usage", None) is not None:
                 usage_info = chunk.usage
-        if usage_info:
-            log_openai_usage(usage_info, model)
-        else:
-            pt = log_token_count(prompt, "Prompt tokens")
-            ct = log_token_count(output, "Completion tokens")
-            cost = openai_cost(model, pt, ct)
-            if cost:
-                logging.info("Estimated OpenAI cost: $%.6f", cost)
+        log_usage(prompt, output, usage_info, model)
         match = re.search(r"(?s)Template\s*[:\-]?\s*(.*)", output)
         template = match.group(1).strip() if match else None
         if template:
