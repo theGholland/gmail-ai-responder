@@ -3,31 +3,74 @@
 <head>
   <meta charset="utf-8">
   <title>Tone Coach</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/vaporwave.css">
 </head>
 <body class="vaporwave">
-  <div class="grid-container">
-    <div>
-      <input class="search" value="in:inbox" placeholder="search" />
-      <button class="btn fetch-btn">Fetch</button>
+  <div class="bg-motion"></div>
+  <div class="bg-glow bg-glow-a"></div>
+  <div class="bg-glow bg-glow-b"></div>
+
+  <header class="site-header">
+    <h1 class="title">Tone Coach</h1>
+    <p class="subtitle">Neon clarity for your inbox</p>
+  </header>
+
+  <main class="grid-container">
+    <section class="panel panel--inbox">
+      <div class="field-row">
+        <input class="search" value="in:inbox" placeholder="Search threads (e.g., from:alice after:2025/08/01)" />
+        <button class="btn btn--primary fetch-btn">
+          <span class="btn-glow"></span>
+          <span>Fetch</span>
+        </button>
+      </div>
       <ul class="threads"></ul>
-    </div>
-    <div>
-      <textarea placeholder="Your draft…"></textarea>
-      <input class="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)" />
-      <button class="btn coach-btn">Coach</button>
-      <button class="btn identify-btn">Identify</button>
-    </div>
-    <div class="thread-box">Thread will appear here.</div>
-    <div class="output-box">Model output will appear here.</div>
-  </div>
+    </section>
+
+    <section class="panel panel--compose">
+      <label class="label" for="draft">Draft</label>
+      <textarea id="draft" placeholder="Your draft…"></textarea>
+
+      <label class="label" for="goal">Goal</label>
+      <input id="goal" class="goal" placeholder="Goal (e.g., confirm ETA, under 120 words)" />
+
+      <div class="btn-row">
+        <button class="btn btn--accent coach-btn">
+          <span class="btn-glow"></span>
+          <span>Coach</span>
+        </button>
+        <button class="btn btn--ghost identify-btn">
+          <span class="btn-glow"></span>
+          <span>Identify</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="panel panel--thread">
+      <div class="panel-title">Thread</div>
+      <div class="thread-box">Thread will appear here.</div>
+    </section>
+
+    <section class="panel panel--output">
+      <div class="panel-title">Model Output</div>
+      <div class="output-box">Model output will appear here.</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <small>© 2025 Tone Coach</small>
+  </footer>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const fetchBtn = document.querySelector('.fetch-btn');
       const threadList = document.querySelector('.threads');
       const threadBox = document.querySelector('.thread-box');
 
-      function fetchThreads() {
+      fetchBtn.addEventListener('click', () => {
         const q = document.querySelector('input.search').value;
         fetch(`/api/threads?q=${encodeURIComponent(q)}`)
           .then(r => r.json())
@@ -43,9 +86,7 @@
               threadList.appendChild(li);
             });
           });
-      }
-
-      fetchBtn.addEventListener('click', fetchThreads);
+      });
 
       threadList.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
@@ -55,11 +96,10 @@
           .then(r => r.json())
           .then(data => {
             threadBox.textContent = data.thread;
+            threadList.querySelectorAll('a').forEach(a => a.classList.remove('active'));
+            e.target.classList.add('active');
           });
       });
-
-      // Automatically fetch threads on page load so emails are shown immediately
-      fetchThreads();
     });
   </script>
 </body>
