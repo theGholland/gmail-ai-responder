@@ -84,42 +84,38 @@ body.vaporwave::after{
 /* Neon grid “floor” */
 .bg-grid{
   position: fixed;
-  /* overscan generously so rotation never crops the edges */
-  left: -20vw; right: -20vw; bottom: -8vh; height: 120vh;
+  left: -20vw; right: -20vw; bottom: -16vh; height: 180vh;
 
-  z-index: 1;                 /* above sky/sunset, below haze/UI */
-  pointer-events: none;
-  will-change: transform;
+  z-index: 1; pointer-events: none; will-change: transform;
 
-  /* denser, slightly thicker lines so they survive projection */
   background:
-    repeating-linear-gradient(to right,
-      rgba(1,241,248,0.9) 0 2.5px, rgba(1,241,248,0) 2.5px 48px),
-    repeating-linear-gradient(to bottom,
-      rgba(255,113,206,0.9) 0 2.5px, rgba(255,113,206,0) 2.5px 48px);
-  filter:
-    drop-shadow(0 0 10px rgba(1,241,248,0.4))
-    drop-shadow(0 0 14px rgba(255,113,206,0.32));
+    repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 56px),
+    repeating-linear-gradient(to bottom, rgba(255,113,206,.9) 0 3px, rgba(255,113,206,0) 3px 56px);
+  filter: drop-shadow(0 0 10px rgba(1,241,248,.4)) drop-shadow(0 0 14px rgba(255,113,206,.32));
 
-  /* gentler projection and lift so more of the plane is visible */
   transform-origin: 50% 100%;
-  transform:
-    perspective(900px)
-    rotateX(64deg)
-    rotateZ(-16deg)
-    translateY(-10vh);
+  transform: perspective(950px) rotateX(62deg) rotateZ(-16deg) translateY(-22vh);
 
-  /* feather the top with a mask instead of a hard background layer */
-  -webkit-mask: linear-gradient(to top, black 0% 45%, transparent 78%);
-          mask-image: linear-gradient(to top, black 0% 45%, transparent 78%);
+  /* feather toward horizon; ensure some opaque band always remains */
+  -webkit-mask: linear-gradient(to top, black 0 58%, transparent 90%);
+          mask: linear-gradient(to top, black 0 58%, transparent 90%);
 
   animation: gridDrift 26s linear infinite;
 }
 
-/* tuned to 48px cell period above */
+/* Short viewports: keep the grid inside the mask */
+@media (max-height: 820px){
+  .bg-grid{
+    bottom: -22vh; height: 220vh; transform: perspective(950px) rotateX(60deg) rotateZ(-16deg) translateY(-28vh);
+    -webkit-mask: linear-gradient(to top, black 0 70%, transparent 96%);
+            mask: linear-gradient(to top, black 0 70%, transparent 96%);
+  }
+}
+
+/* tuned to 56px cell period above */
 @keyframes gridDrift{
   0%   { background-position: 0 0, 0 0; }
-  100% { background-position: 48px 96px, 0 96px; }
+  100% { background-position: 56px 112px, 0 112px; }
 }
 
 @keyframes sunFloat{
@@ -160,20 +156,25 @@ body.vaporwave::after{
 }
 
 /* Grid layout */
-.grid-container {
-  display: grid;
-  gap: 24px; /* a bit more breathing room */
-  max-width: 1440px;
+.grid-container{
+  display:grid;
+  gap:24px;
+  grid-template-columns: repeat(3, minmax(420px, 1fr));
+  max-width: min(96vw, 1440px);
   margin: 0 auto;
   padding: 2rem;
-  /* Mobile‑first: stack panels vertically */
-  grid-template-columns: 1fr;
+  align-items: start;
 }
 
-/* Allow panels to sit side‑by‑side on wider viewports */
-@media (min-width: 768px) {
-  .grid-container {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+@media (max-width: 1320px){
+  .grid-container{
+    grid-template-columns: repeat(2, minmax(420px, 1fr));
+  }
+}
+
+@media (max-width: 880px){
+  .grid-container{
+    grid-template-columns: minmax(320px, 1fr);
   }
 }
 
