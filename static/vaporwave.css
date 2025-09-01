@@ -163,10 +163,9 @@ body.vaporwave::after{
 /* Grid layout */
 .grid-container{
   display:grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   grid-template-areas:
-    "inbox output"
-    "compose output";
+    "inbox compose output";
   gap: clamp(14px, 1.8vw, 22px);
   padding: clamp(16px, 2.2vw, 28px);
   max-width: 1400px;
@@ -228,7 +227,7 @@ input, textarea{
     inset 0 1px 0 rgba(255,255,255,0.7),
     0 0 0 0 rgba(255,113,206,0);
   transition: box-shadow .25s ease, transform .15s ease, border-color .2s ease;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-family: inherit;
 }
 input:focus, textarea:focus{
   border-color: rgba(255,113,206,0.7);
