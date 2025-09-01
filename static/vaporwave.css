@@ -88,7 +88,7 @@ body.vaporwave::after{
 .bg-grid{
   position: fixed;
   /* use viewport-relative offsets for consistent centering */
-  left: calc(var(--vw) * -30);
+  left: calc(var(--vw) * -50);
   right: calc(var(--vw) * -50);
   bottom: calc(var(--vh) * -20);
   height: calc(var(--vh) * 220);
@@ -101,7 +101,7 @@ body.vaporwave::after{
   filter: drop-shadow(0 0 10px rgba(1,241,248,.4)) drop-shadow(0 0 14px rgba(1,241,248,.32));
 
   transform-origin: 50% 100%;
-  transform: perspective(950px) rotateX(62deg) rotateZ(-16deg) translateY(calc(var(--vh) * -18));
+  transform: perspective(950px) rotateX(62deg) translateY(calc(var(--vh) * -18));
 
   /* feather toward horizon; ensure some opaque band always remains */
   -webkit-mask: linear-gradient(to top, black 0 58%, transparent 90%);
@@ -127,7 +127,7 @@ body.vaporwave::after{
   .bg-grid{
     bottom: calc(var(--vh) * -26);
     height: calc(var(--vh) * 260);
-    transform: perspective(950px) rotateX(60deg) rotateZ(-16deg) translateY(calc(var(--vh) * -24));
+    transform: perspective(950px) rotateX(60deg) translateY(calc(var(--vh) * -24));
     -webkit-mask: linear-gradient(to top, black 0 70%, transparent 96%);
             mask: linear-gradient(to top, black 0 70%, transparent 96%);
   }
@@ -136,7 +136,7 @@ body.vaporwave::after{
 /* Very short viewports */
 @media (max-height: 680px){
   .bg-grid{
-    bottom: -26vh; height: 240vh; transform: perspective(950px) rotateX(58deg) rotateZ(-16deg) translateY(-32vh);
+    bottom: -26vh; height: 240vh; transform: perspective(950px) rotateX(58deg) translateY(-32vh);
     -webkit-mask: linear-gradient(to top, black 0 78%, transparent 98%);
             mask: linear-gradient(to top, black 0 78%, transparent 98%);
   }
@@ -145,7 +145,7 @@ body.vaporwave::after{
 /* Extremely short viewports */
 @media (max-height: 600px){
   .bg-grid{
-    bottom: -30vh; height: 260vh; transform: perspective(950px) rotateX(56deg) rotateZ(-16deg) translateY(-36vh);
+    bottom: -30vh; height: 260vh; transform: perspective(950px) rotateX(56deg) translateY(-36vh);
     -webkit-mask: linear-gradient(to top, black 0 84%, transparent 99%);
             mask: linear-gradient(to top, black 0 84%, transparent 99%);
   }
@@ -154,7 +154,7 @@ body.vaporwave::after{
 /* Landscape orientation */
 @media (orientation: landscape){
   .bg-grid{
-    bottom: -12vh; height: 160vh; transform: perspective(950px) rotateX(64deg) rotateZ(-16deg) translateY(-16vh);
+    bottom: -12vh; height: 160vh; transform: perspective(950px) rotateX(64deg) translateY(-16vh);
     -webkit-mask: linear-gradient(to top, black 0 56%, transparent 90%);
             mask: linear-gradient(to top, black 0 56%, transparent 90%);
   }
@@ -163,7 +163,7 @@ body.vaporwave::after{
 /* Short landscape viewports */
 @media (orientation: landscape) and (max-height: 480px){
   .bg-grid{
-    bottom: -18vh; height: 200vh; transform: perspective(950px) rotateX(60deg) rotateZ(-16deg) translateY(-24vh);
+    bottom: -18vh; height: 200vh; transform: perspective(950px) rotateX(60deg) translateY(-24vh);
     -webkit-mask: linear-gradient(to top, black 0 66%, transparent 94%);
             mask: linear-gradient(to top, black 0 66%, transparent 94%);
   }
