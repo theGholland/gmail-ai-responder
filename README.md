@@ -7,7 +7,7 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 ## How it works
 
 * **Gmail integration.** `runner.py` authenticates with Google via OAuth, retrieves thread contents and can create reply drafts.
-* **Local model interaction.** The assembled prompt (thread, draft, and goal) is sent to a locally hosted model through an OpenAI-compatible endpoint and the model's critique is returned.
+* **Model interaction.** The assembled prompt (thread, draft, and goal) is sent either to a locally hosted model via an OpenAI-compatible endpoint or to OpenAI's API, and the model's critique is returned.
 * **Web interface.** A small vanilla JS front-end talks to Flask endpoints to fetch threads, submit drafts/goals, and stream coaching output.
 * **Mad Libs reply.** A second button analyzes the thread for the sender's needs and generates a fill‑in‑the‑blank reply addressing them.
 * **Link scrubbing.** Any `http(s)` links in the thread are reduced to their bare domains before being sent to the model.
@@ -35,8 +35,9 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 
 3. **Configure environment.** Copy `.env.example` ➜ `.env` and set values. At minimum:
 
-   * `LLM_BASE_URL` (e.g., `http://127.0.0.1:11434/v1`)
-   * `LLM_MODEL` (e.g., `llama3.1` or `qwen2.5:14b-instruct`)
+   * `LLM_URL` (e.g., `http://127.0.0.1:11434/v1`)
+   * `MODEL` (e.g., `llama3.1` or `qwen2.5:14b-instruct`)
+   * To call OpenAI's hosted models instead of a local server, set `USE_OPENAI=true` and provide `OPENAI_API_KEY` (optionally `OPENAI_MODEL`).
 
 4. **Gmail or Microsoft Graph auth (optional at first).**
 

@@ -53,6 +53,7 @@
 
     <section class="panel panel--output">
       <div class="panel-title">Model Output</div>
+      <div class="timer">0.0s</div>
       <div class="output-box">Model output will appear here.</div>
     </section>
   </main>
@@ -69,38 +70,70 @@
       const coachBtn = document.querySelector('.coach-btn');
       const identifyBtn = document.querySelector('.identify-btn');
       const outputBox = document.querySelector('.output-box');
+      const timerEl = document.querySelector('.timer');
       const draftInput = document.querySelector('#draft');
       const goalInput = document.querySelector('.goal');
 
-      fetchBtn.addEventListener('click', () => {
+      let timerHandle;
+
+      function startTimer() {
+        const start = performance.now();
+        timerEl.textContent = '0.0s';
+        timerEl.style.visibility = 'visible';
+        timerHandle = setInterval(() => {
+          const elapsed = (performance.now() - start) / 1000;
+          timerEl.textContent = `${elapsed.toFixed(1)}s`;
+        }, 100);
+      }
+
+      function stopTimer() {
+        clearInterval(timerHandle);
+        timerHandle = null;
+      }
+
+      async function showThread(id, link) {
+        const resp = await fetch(`/api/thread/${id}`);
+        const data = await resp.json();
+        threadBox.textContent = data.thread;
+        threadList.querySelectorAll('a').forEach(a => a.classList.remove('active'));
+        if (link) {
+          link.classList.add('active');
+        }
+      }
+
+      async function loadThreads() {
         const q = document.querySelector('input.search').value;
-        fetch(`/api/threads?q=${encodeURIComponent(q)}`)
-          .then(r => r.json())
-          .then(threads => {
-            threadList.innerHTML = '';
-            threads.forEach(t => {
-              const li = document.createElement('li');
-              const a = document.createElement('a');
-              a.href = '#';
-              a.dataset.id = t.id;
-              a.textContent = t.snippet || t.id;
-              li.appendChild(a);
-              threadList.appendChild(li);
-            });
-          });
+        const resp = await fetch(`/api/threads?q=${encodeURIComponent(q)}`);
+        const threads = await resp.json();
+        threadList.innerHTML = '';
+        threads.forEach(t => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = '#';
+          a.dataset.id = t.id;
+          a.textContent = t.snippet || t.id;
+          li.appendChild(a);
+          threadList.appendChild(li);
+        });
+        if (threads.length > 0) {
+          const firstLink = threadList.querySelector('a');
+          if (firstLink) {
+            showThread(firstLink.dataset.id, firstLink);
+          }
+        } else {
+          threadBox.textContent = 'Thread will appear here.';
+        }
+      }
+
+      fetchBtn.addEventListener('click', () => {
+        loadThreads();
       });
 
       threadList.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
         if (!id) return;
         e.preventDefault();
-        fetch(`/api/thread/${id}`)
-          .then(r => r.json())
-          .then(data => {
-            threadBox.textContent = data.thread;
-            threadList.querySelectorAll('a').forEach(a => a.classList.remove('active'));
-            e.target.classList.add('active');
-          });
+        showThread(id, e.target);
       });
 
       async function streamResponse(resp) {
@@ -123,10 +156,12 @@
         form.append('goal', goalInput.value);
         coachBtn.disabled = true;
         coachBtn.querySelector('span:last-child').textContent = 'Coaching…';
+        startTimer();
         try {
           const resp = await fetch('/coach', { method: 'POST', body: form });
           await streamResponse(resp);
         } finally {
+          stopTimer();
           coachBtn.disabled = false;
           coachBtn.querySelector('span:last-child').textContent = 'Coach';
         }
@@ -139,10 +174,12 @@
         form.append('thread_id', active.dataset.id);
         identifyBtn.disabled = true;
         identifyBtn.querySelector('span:last-child').textContent = 'Identifying…';
+        startTimer();
         try {
           const resp = await fetch('/madlibs', { method: 'POST', body: form });
           await streamResponse(resp);
         } finally {
+          stopTimer();
           identifyBtn.disabled = false;
           identifyBtn.querySelector('span:last-child').textContent = 'Identify';
         }
