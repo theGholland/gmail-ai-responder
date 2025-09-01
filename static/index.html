@@ -21,7 +21,7 @@
   <main class="grid-container">
     <section class="panel panel--inbox">
       <div class="field-row">
-        <input class="search" value="in:inbox" placeholder="Search threads (e.g., from:alice after:2025/08/01)" />
+        <input class="search" value="is:important" placeholder="Search threads (e.g., from:alice after:2025/08/01)" />
         <button class="btn btn--primary fetch-btn">
           <span class="btn-glow"></span>
           <span>Fetch</span>
@@ -73,6 +73,7 @@
       const timerEl = document.querySelector('.timer');
       const draftInput = document.querySelector('#draft');
       const goalInput = document.querySelector('.goal');
+      const searchInput = document.querySelector('input.search');
 
       let timerHandle;
 
@@ -91,8 +92,7 @@
         timerHandle = null;
       }
 
-      fetchBtn.addEventListener('click', () => {
-        const q = document.querySelector('input.search').value;
+      function loadThreads(q) {
         fetch(`/api/threads?q=${encodeURIComponent(q)}`)
           .then(r => r.json())
           .then(threads => {
@@ -107,7 +107,15 @@
               threadList.appendChild(li);
             });
           });
+      }
+
+      fetchBtn.addEventListener('click', () => {
+        loadThreads(searchInput.value);
       });
+
+      // Auto-fetch important threads on startup
+      searchInput.value = 'is:important';
+      loadThreads('is:important');
 
       threadList.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
