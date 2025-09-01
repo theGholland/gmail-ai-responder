@@ -79,10 +79,10 @@ body.vaporwave{
 /* Grid layout */
 .grid-container{
   display:grid;
-  grid-template-columns: 1.1fr 1.3fr 1.2fr;
+  grid-template-columns: 1fr 1fr;
   grid-template-areas:
-    "inbox compose thread"
-    "inbox compose output";
+    "inbox output"
+    "compose output";
   gap: clamp(14px, 1.8vw, 22px);
   padding: clamp(16px, 2.2vw, 28px);
   max-width: 1400px;
@@ -109,7 +109,6 @@ body.vaporwave{
 }
 .panel--inbox{ grid-area: inbox; display:flex; flex-direction:column; gap:12px; }
 .panel--compose{ grid-area: compose; display:flex; flex-direction:column; gap:12px; }
-.panel--thread{ grid-area: thread; display:flex; flex-direction:column; gap:10px; }
 .panel--output{ grid-area: output; display:flex; flex-direction:column; gap:10px; }
 
 .panel-title{
@@ -289,21 +288,12 @@ textarea{
 *::-webkit-scrollbar-track{ background: rgba(255,255,255,.15); border-radius: 999px; }
 
 /* Responsive */
-@media (max-width: 1120px){
-  .grid-container{
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      "inbox compose"
-      "thread output";
-  }
-}
 @media (max-width: 740px){
   .grid-container{
     grid-template-columns: 1fr;
     grid-template-areas:
       "inbox"
       "compose"
-      "thread"
       "output";
   }
   .field-row{ flex-direction:column; align-items:stretch; }
