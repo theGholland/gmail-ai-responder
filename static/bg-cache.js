@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grad.addColorStop(0.38, core);
     grad.addColorStop(0.62, '#ff9c66');
     grad.addColorStop(0.85, rim);
-    grad.addColorStop(1, 'rgba(255,106,77,0)');
+    grad.addColorStop(1, rim);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, size, size);
 
