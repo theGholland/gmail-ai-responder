@@ -263,7 +263,17 @@ body.vaporwave::after{
 }
 .panel--inbox{ grid-area: inbox; display:flex; flex-direction:column; gap:12px; }
 .panel--compose{ grid-area: compose; display:flex; flex-direction:column; gap:12px; }
-.panel--output{ grid-area: output; display:flex; flex-direction:column; gap:10px; }
+.panel--output{ grid-area: output; display:flex; flex-direction:column; gap:10px; position:relative; }
+
+.panel--output .timer{
+  position:absolute;
+  top:4px;
+  right:8px;
+  font-family:Orbitron, Inter, sans-serif;
+  font-size:12px;
+  color:var(--neon-cyan);
+  visibility:hidden;
+}
 
 .panel-title{
   font-family: Orbitron, Inter, sans-serif;
