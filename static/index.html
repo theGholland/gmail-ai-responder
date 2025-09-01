@@ -53,6 +53,7 @@
 
     <section class="panel panel--output">
       <div class="panel-title">Model Output</div>
+      <div class="timer">0.0s</div>
       <div class="output-box">Model output will appear here.</div>
     </section>
   </main>
@@ -69,8 +70,26 @@
       const coachBtn = document.querySelector('.coach-btn');
       const identifyBtn = document.querySelector('.identify-btn');
       const outputBox = document.querySelector('.output-box');
+      const timerEl = document.querySelector('.timer');
       const draftInput = document.querySelector('#draft');
       const goalInput = document.querySelector('.goal');
+
+      let timerHandle;
+
+      function startTimer() {
+        const start = performance.now();
+        timerEl.textContent = '0.0s';
+        timerEl.style.visibility = 'visible';
+        timerHandle = setInterval(() => {
+          const elapsed = (performance.now() - start) / 1000;
+          timerEl.textContent = `${elapsed.toFixed(1)}s`;
+        }, 100);
+      }
+
+      function stopTimer() {
+        clearInterval(timerHandle);
+        timerHandle = null;
+      }
 
       fetchBtn.addEventListener('click', () => {
         const q = document.querySelector('input.search').value;
@@ -123,10 +142,12 @@
         form.append('goal', goalInput.value);
         coachBtn.disabled = true;
         coachBtn.querySelector('span:last-child').textContent = 'Coaching…';
+        startTimer();
         try {
           const resp = await fetch('/coach', { method: 'POST', body: form });
           await streamResponse(resp);
         } finally {
+          stopTimer();
           coachBtn.disabled = false;
           coachBtn.querySelector('span:last-child').textContent = 'Coach';
         }
@@ -139,10 +160,12 @@
         form.append('thread_id', active.dataset.id);
         identifyBtn.disabled = true;
         identifyBtn.querySelector('span:last-child').textContent = 'Identifying…';
+        startTimer();
         try {
           const resp = await fetch('/madlibs', { method: 'POST', body: form });
           await streamResponse(resp);
         } finally {
+          stopTimer();
           identifyBtn.disabled = false;
           identifyBtn.querySelector('span:last-child').textContent = 'Identify';
         }
