@@ -218,7 +218,7 @@ body.vaporwave::after{
   gap:24px;
   grid-template-columns: repeat(3, minmax(420px, 1fr));
   grid-template-areas: 'inbox compose output';
-  max-width: min(96vw, 1440px);
+  max-width: min(96vw, 1700px);
   margin: 0 auto;
   padding: 2rem;
   align-items: start;
