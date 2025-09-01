@@ -42,19 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, size, size);
 
-    // mask with circle and scanlines
+    // build stripe mask and clip with circle
     const mask = document.createElement('canvas');
     mask.width = mask.height = size;
     const mCtx = mask.getContext('2d');
     mCtx.fillStyle = '#000';
+    for (let y = 0; y < size; y += 16) {
+      mCtx.fillRect(0, y, size, 10);
+    }
+    mCtx.globalCompositeOperation = 'destination-in';
     mCtx.beginPath();
     mCtx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
     mCtx.closePath();
     mCtx.fill();
-    mCtx.globalCompositeOperation = 'destination-in';
-    for (let y = 0; y < size; y += 16) {
-      mCtx.fillRect(0, y, size, 10);
-    }
+
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(mask, 0, 0);
 
