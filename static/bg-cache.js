@@ -72,6 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (sunEl) {
     const sunURL = makeSunImage();
     sunEl.style.backgroundImage = `url(${sunURL})`;
+    sunEl.style.backgroundRepeat = 'no-repeat';
+    sunEl.style.backgroundSize = '100% 100%';
     sunEl.style.webkitMask = 'none';
     sunEl.style.mask = 'none';
   }
