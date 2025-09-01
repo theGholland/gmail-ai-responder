@@ -83,7 +83,7 @@
               const a = document.createElement('a');
               a.href = '#';
               a.dataset.id = t.id;
-              a.textContent = t.snippet || t.id;
+              a.textContent = t.subject || t.snippet || t.id;
               li.appendChild(a);
               threadList.appendChild(li);
             });
