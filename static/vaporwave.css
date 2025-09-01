@@ -88,20 +88,20 @@ body.vaporwave::after{
 .bg-grid{
   position: fixed;
   /* use viewport-relative offsets for consistent centering */
-  left: calc(var(--vw) * -20);
-  right: calc(var(--vw) * -20);
-  bottom: calc(var(--vh) * -16);
-  height: calc(var(--vh) * 180);
+  left: calc(var(--vw) * -30);
+  right: calc(var(--vw) * -30);
+  bottom: calc(var(--vh) * -20);
+  height: calc(var(--vh) * 220);
 
   z-index: 1; pointer-events: none; will-change: transform;
 
   background:
-    repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 80px),
-    repeating-linear-gradient(to bottom, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 80px);
+    repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 5px, rgba(1,241,248,0) 5px 120px),
+    repeating-linear-gradient(to bottom, rgba(1,241,248,.9) 0 5px, rgba(1,241,248,0) 5px 120px);
   filter: drop-shadow(0 0 10px rgba(1,241,248,.4)) drop-shadow(0 0 14px rgba(1,241,248,.32));
 
   transform-origin: 50% 100%;
-  transform: perspective(950px) rotateX(62deg) rotateZ(-16deg) translateY(calc(var(--vh) * -22));
+  transform: perspective(950px) rotateX(62deg) rotateZ(-16deg) translateY(calc(var(--vh) * -18));
 
   /* feather toward horizon; ensure some opaque band always remains */
   -webkit-mask: linear-gradient(to top, black 0 58%, transparent 90%);
@@ -117,17 +117,17 @@ body.vaporwave::after{
     opacity:0.65;
     background:
       linear-gradient(to bottom, var(--sky-c) 0%, transparent 60%),
-      repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 80px),
-      repeating-linear-gradient(to bottom, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 80px);
+      repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 5px, rgba(1,241,248,0) 5px 120px),
+      repeating-linear-gradient(to bottom, rgba(1,241,248,.9) 0 5px, rgba(1,241,248,0) 5px 120px);
   }
 }
 
 /* Short viewports: keep the grid inside the mask */
 @media (max-height: 820px){
   .bg-grid{
-    bottom: calc(var(--vh) * -22);
-    height: calc(var(--vh) * 220);
-    transform: perspective(950px) rotateX(60deg) rotateZ(-16deg) translateY(calc(var(--vh) * -28));
+    bottom: calc(var(--vh) * -26);
+    height: calc(var(--vh) * 260);
+    transform: perspective(950px) rotateX(60deg) rotateZ(-16deg) translateY(calc(var(--vh) * -24));
     -webkit-mask: linear-gradient(to top, black 0 70%, transparent 96%);
             mask: linear-gradient(to top, black 0 70%, transparent 96%);
   }
