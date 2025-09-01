@@ -27,7 +27,7 @@
       const threadList = document.querySelector('.threads');
       const threadBox = document.querySelector('.thread-box');
 
-      fetchBtn.addEventListener('click', () => {
+      function fetchThreads() {
         const q = document.querySelector('input.search').value;
         fetch(`/api/threads?q=${encodeURIComponent(q)}`)
           .then(r => r.json())
@@ -43,7 +43,9 @@
               threadList.appendChild(li);
             });
           });
-      });
+      }
+
+      fetchBtn.addEventListener('click', fetchThreads);
 
       threadList.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
@@ -55,6 +57,9 @@
             threadBox.textContent = data.thread;
           });
       });
+
+      // Automatically fetch threads on page load so emails are shown immediately
+      fetchThreads();
     });
   </script>
 </body>
