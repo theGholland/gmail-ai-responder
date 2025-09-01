@@ -121,6 +121,42 @@ body.vaporwave::after{
   }
 }
 
+/* Very short viewports */
+@media (max-height: 680px){
+  .bg-grid{
+    bottom: -26vh; height: 240vh; transform: perspective(950px) rotateX(58deg) rotateZ(-16deg) translateY(-32vh);
+    -webkit-mask: linear-gradient(to top, black 0 78%, transparent 98%);
+            mask: linear-gradient(to top, black 0 78%, transparent 98%);
+  }
+}
+
+/* Extremely short viewports */
+@media (max-height: 600px){
+  .bg-grid{
+    bottom: -30vh; height: 260vh; transform: perspective(950px) rotateX(56deg) rotateZ(-16deg) translateY(-36vh);
+    -webkit-mask: linear-gradient(to top, black 0 84%, transparent 99%);
+            mask: linear-gradient(to top, black 0 84%, transparent 99%);
+  }
+}
+
+/* Landscape orientation */
+@media (orientation: landscape){
+  .bg-grid{
+    bottom: -12vh; height: 160vh; transform: perspective(950px) rotateX(64deg) rotateZ(-16deg) translateY(-16vh);
+    -webkit-mask: linear-gradient(to top, black 0 56%, transparent 90%);
+            mask: linear-gradient(to top, black 0 56%, transparent 90%);
+  }
+}
+
+/* Short landscape viewports */
+@media (orientation: landscape) and (max-height: 480px){
+  .bg-grid{
+    bottom: -18vh; height: 200vh; transform: perspective(950px) rotateX(60deg) rotateZ(-16deg) translateY(-24vh);
+    -webkit-mask: linear-gradient(to top, black 0 66%, transparent 94%);
+            mask: linear-gradient(to top, black 0 66%, transparent 94%);
+  }
+}
+
 /* tuned to 56px cell period above */
 @keyframes gridDrift{
   0%   { background-position: 0 0, 0 0; }
