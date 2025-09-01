@@ -160,6 +160,7 @@ body.vaporwave::after{
   display:grid;
   gap:24px;
   grid-template-columns: repeat(3, minmax(420px, 1fr));
+  grid-template-areas: 'inbox compose output';
   max-width: min(96vw, 1440px);
   margin: 0 auto;
   padding: 2rem;
@@ -169,12 +170,19 @@ body.vaporwave::after{
 @media (max-width: 1320px){
   .grid-container{
     grid-template-columns: repeat(2, minmax(420px, 1fr));
+    grid-template-areas:
+      'inbox compose'
+      'output output';
   }
 }
 
 @media (max-width: 880px){
   .grid-container{
     grid-template-columns: minmax(320px, 1fr);
+    grid-template-areas:
+      'inbox'
+      'compose'
+      'output';
   }
 }
 
