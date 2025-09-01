@@ -121,13 +121,38 @@ def serve_ui():
 def api_threads():
     svc = gmail_service()
     q = request.args.get("q") or "in:inbox"
-    threads = (
+    thread_refs = (
         svc.users()
         .threads()
         .list(userId="me", q=q, maxResults=3)
         .execute()
         .get("threads", [])
     )
+    threads = []
+    for t in thread_refs:
+        meta = (
+            svc.users()
+            .threads()
+            .get(
+                userId="me",
+                id=t["id"],
+                format="metadata",
+                metadataHeaders=["Subject"],
+            )
+            .execute()
+        )
+        subject = ""
+        snippet = ""
+        msgs = meta.get("messages", [])
+        if msgs:
+            m0 = msgs[0]
+            headers = m0["payload"].get("headers", [])
+            subject = next(
+                (h["value"] for h in headers if h["name"].lower() == "subject"),
+                "",
+            )
+            snippet = BeautifulSoup(m0.get("snippet", ""), "html.parser").get_text()
+        threads.append({"id": t["id"], "subject": subject, "snippet": snippet})
     return jsonify(threads)
 
 
