@@ -20,6 +20,12 @@
 *{box-sizing:border-box}
 html,body{height:100%}
 
+/* Ensure content sits above the background layers */
+.site-header, .grid-container, .site-footer {
+  position: relative;
+  z-index: 2;
+}
+
 /* Sky gradient + gentle motion retained */
 body.vaporwave{
   margin:0;
@@ -42,7 +48,7 @@ body.vaporwave{
   width: clamp(36vmin, 42vmin, 48vmin);
   height: clamp(36vmin, 42vmin, 48vmin);
   border-radius:50%;
-  z-index:-1;
+  z-index: 1;
   background:
     radial-gradient(circle at 50% 60%,
       #fff6d2 0%,
@@ -54,6 +60,7 @@ body.vaporwave{
     0 0 120px rgba(255,166,102,0.45),
     0 0 240px rgba(255,106,77,0.30),
     0 0 400px rgba(255,113,206,0.18);
+  pointer-events: none;
   /* scanline mask */
   -webkit-mask:
     radial-gradient(circle at 50% 50%, #000 65%, transparent 66%) /* crisp circular edge */ ,
@@ -65,33 +72,42 @@ body.vaporwave{
 
 /* Oblique neon grid “floor” with parallax motion toward the viewer */
 .bg-grid{
-  position:fixed; inset:auto -10vw -20vh -10vw; /* overscan for rotation crop */
-  height: 80vh;
-  z-index:-2;
-  transform-origin: 50% 100%;
-  transform:
-    perspective(900px)
-    rotateX(68deg)
-    rotateZ(-16deg)
-    translateY(6vh);
+  position: fixed;
+  inset: auto -12vw -16vh -12vw;   /* overscan to avoid rotation crop */
+  height: 78vh;
+  z-index: 1;                      /* was -2 → now above the body, below content */
+  pointer-events: none;
+
+  /* Denser, thicker lines survive perspective foreshortening */
   background:
-    /* vertical lines */
+    /* verticals (on top) */
     repeating-linear-gradient(
       to right,
-      rgba(1,241,248,0.75) 0 2px,
-      rgba(1,241,248,0.0) 2px 120px
+      rgba(1,241,248,0.92) 0 3px,
+      rgba(1,241,248,0.00) 3px 60px
     ),
-    /* horizontal lines */
+    /* horizontals */
     repeating-linear-gradient(
       to bottom,
-      rgba(255,113,206,0.75) 0 2px,
-      rgba(255,113,206,0.0) 2px 120px
+      rgba(255,113,206,0.92) 0 3px,
+      rgba(255,113,206,0.00) 3px 60px
     ),
     /* ground fade */
-    linear-gradient( to top, rgba(0,0,0,0.55), rgba(0,0,0,0.0) 65% );
-  filter: drop-shadow(0 0 12px rgba(1,241,248,0.45))
-          drop-shadow(0 0 18px rgba(255,113,206,0.35));
-  animation: gridDrift 18s linear infinite;
+    linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.0) 70%);
+  filter:
+    drop-shadow(0 0 12px rgba(1,241,248,0.45))
+    drop-shadow(0 0 18px rgba(255,113,206,0.35));
+
+  /* A touch more dramatic depth and an explicit origin */
+  transform-origin: 50% 100%;
+  transform:
+    perspective(1000px)
+    rotateX(72deg)
+    rotateZ(-16deg)
+    translateY(8vh);
+
+  /* Slow forward drift */
+  animation: gridDrift 22s linear infinite;
 }
 
 /* Subtle horizon haze that helps the sun sit in the scene */
@@ -99,26 +115,27 @@ body.vaporwave::after{
   content:"";
   position:fixed; inset:auto 0 30vh 0;
   height: 24vh;
-  z-index:-1;
+  z-index: 1;
   background: radial-gradient(60% 100% at 50% 0%,
               rgba(255,255,255,0.35), rgba(255,255,255,0.0) 70%);
   filter: blur(8px) saturate(115%);
   pointer-events:none;
+  opacity: .9;
 }
 
 /* Keyframes */
 @keyframes gridDrift{
   0%{
     background-position:
-      0px 0px,   /* verticals */
-      0px 0px,   /* horizontals */
-      0 0;       /* fade */
+      0 0,      /* verticals */
+      0 0,      /* horizontals */
+      0 0;      /* fade */
   }
   100%{
-    /* move both layers to simulate forward motion */
+    /* advance roughly one cell diagonally */
     background-position:
-      120px 240px,
-      0px 240px,
+      60px 120px,
+      0 120px,
       0 0;
   }
 }
