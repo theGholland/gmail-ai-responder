@@ -15,6 +15,9 @@
   --sky-b:#a14bff;     /* magenta */
   --sky-c:#ff8c42;     /* orange horizon */
   --haze:#ffd0f0;      /* subtle mist */
+  /* viewport relative units */
+  --vw: 1vw;
+  --vh: 1vh;
 }
 
 *{box-sizing:border-box}
@@ -84,7 +87,11 @@ body.vaporwave::after{
 /* Neon grid “floor” */
 .bg-grid{
   position: fixed;
-  left: -20vw; right: -20vw; bottom: -16vh; height: 180vh;
+  /* use viewport-relative offsets for consistent centering */
+  left: calc(var(--vw) * -20);
+  right: calc(var(--vw) * -20);
+  bottom: calc(var(--vh) * -16);
+  height: calc(var(--vh) * 180);
 
   z-index: 1; pointer-events: none; will-change: transform;
 
@@ -94,7 +101,7 @@ body.vaporwave::after{
   filter: drop-shadow(0 0 10px rgba(1,241,248,.4)) drop-shadow(0 0 14px rgba(255,113,206,.32));
 
   transform-origin: 50% 100%;
-  transform: perspective(950px) rotateX(62deg) rotateZ(-16deg) translateY(-22vh);
+  transform: perspective(950px) rotateX(62deg) rotateZ(-16deg) translateY(calc(var(--vh) * -22));
 
   /* feather toward horizon; ensure some opaque band always remains */
   -webkit-mask: linear-gradient(to top, black 0 58%, transparent 90%);
@@ -106,7 +113,9 @@ body.vaporwave::after{
 /* Short viewports: keep the grid inside the mask */
 @media (max-height: 820px){
   .bg-grid{
-    bottom: -22vh; height: 220vh; transform: perspective(950px) rotateX(60deg) rotateZ(-16deg) translateY(-28vh);
+    bottom: calc(var(--vh) * -22);
+    height: calc(var(--vh) * 220);
+    transform: perspective(950px) rotateX(60deg) rotateZ(-16deg) translateY(calc(var(--vh) * -28));
     -webkit-mask: linear-gradient(to top, black 0 70%, transparent 96%);
             mask: linear-gradient(to top, black 0 70%, transparent 96%);
   }
