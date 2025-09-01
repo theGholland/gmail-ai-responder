@@ -87,9 +87,9 @@ body.vaporwave::after{
 /* Neon grid “floor” */
 .bg-grid{
   position: fixed;
-  /* use viewport-relative offsets for consistent centering */
-  left: calc(var(--vw) * -50);
-  right: calc(var(--vw) * -50);
+  /* extend far beyond viewport so edges never appear */
+  left: calc(var(--vw) * -200);
+  right: calc(var(--vw) * -200);
   bottom: calc(var(--vh) * -20);
   height: calc(var(--vh) * 220);
 
