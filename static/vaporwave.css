@@ -75,7 +75,7 @@ body.vaporwave{
   position: fixed;
   inset: auto -12vw -16vh -12vw;   /* overscan to avoid rotation crop */
   height: 78vh;
-  z-index: 1;                      /* was -2 → now above the body, below content */
+  z-index: 2;                      /* ensure grid sits above haze */
   pointer-events: none;
 
   /* Denser, thicker lines survive perspective foreshortening */
@@ -115,7 +115,7 @@ body.vaporwave::after{
   content:"";
   position:fixed; inset:auto 0 30vh 0;
   height: 24vh;
-  z-index: 0;
+  z-index: -1;                     /* place haze behind the grid */
   background: radial-gradient(60% 100% at 50% 0%,
               rgba(255,255,255,0.35), rgba(255,255,255,0.0) 70%);
   filter: blur(8px) saturate(115%);
