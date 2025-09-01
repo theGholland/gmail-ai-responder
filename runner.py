@@ -131,7 +131,7 @@ def serve_ui():
 @app.route("/api/threads", methods=["GET"])
 def api_threads():
     svc = gmail_service()
-    q = request.args.get("q") or "in:inbox"
+    q = request.args.get("q") or "is:important"
     thread_refs = (
         svc.users()
         .threads()
