@@ -178,15 +178,13 @@ body.vaporwave::after{
 }
 
 /* Grid layout */
-.grid-container{
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-areas:
-    "inbox compose output";
-  gap: clamp(14px, 1.8vw, 22px);
-  padding: clamp(16px, 2.2vw, 28px);
-  max-width: 1400px;
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px; /* a bit more breathing room */
+  max-width: 1440px;
   margin: 0 auto;
+  padding: 2rem;
 }
 
 .panel{
@@ -389,13 +387,6 @@ textarea{
 
 /* Responsive */
 @media (max-width: 740px){
-  .grid-container{
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "inbox"
-      "compose"
-      "output";
-  }
   .field-row{ flex-direction:column; align-items:stretch; }
   .btn-row{ flex-wrap:wrap; }
 }
