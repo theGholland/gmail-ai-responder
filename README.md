@@ -10,6 +10,7 @@ This repository scaffolds a strictly local workflow: fetch an email thread from 
 * **Model interaction.** The assembled prompt (thread, draft, and goal) is sent either to a locally hosted model via an OpenAI-compatible endpoint or to OpenAI's API, and the model's critique is returned.
 * **Web interface.** A small vanilla JS front-end talks to Flask endpoints to fetch threads, submit drafts/goals, and stream coaching output.
 * **Mad Libs reply.** A second button analyzes the thread for the sender's needs and generates a fill‑in‑the‑blank reply addressing them.
+* **Formatting cleanup.** Basic HTML tags and excessive blank lines are stripped before sending text to the model.
 * **Link scrubbing.** Any `http(s)` links in the thread are reduced to their bare domains before being sent to the model.
 * **Security posture.** Designed for localhost-only deployment; start with read-only mail scopes and never commit secrets.
 
