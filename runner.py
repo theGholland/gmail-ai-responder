@@ -16,6 +16,21 @@ logging.basicConfig(level=logging.INFO)
 SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
 LLM_URL = os.getenv("LLM_URL", "http://127.0.0.1:11434/v1")                      # Ollama default
 MODEL  = os.getenv("MODEL", "llama3.1")                                        # or qwen2.5:14b-instruct
+USE_OPENAI = os.getenv("USE_OPENAI", "false").lower() == "true"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+
+def llm_client():
+    if USE_OPENAI:
+        if not OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY required when USE_OPENAI=true")
+        return OpenAI(api_key=OPENAI_API_KEY)
+    return OpenAI(base_url=LLM_URL, api_key="ollama")
+
+
+def llm_model():
+    return OPENAI_MODEL if USE_OPENAI else MODEL
 
 app = Flask(__name__)
 
@@ -143,7 +158,8 @@ def coach():
         f"B) MY DRAFT: <<<{draft}>>>\nC) GOAL: {goal}\n"
         "Tasks: diagnose tone; critique; two rewrites (Alpha minimal, Beta assertive). Keep facts intact."
     )
-    client = OpenAI(base_url=LLM_URL, api_key="ollama")
+    client = llm_client()
+    model = llm_model()
     last = th["messages"][-1]["payload"]["headers"]
     subj = next((h["value"] for h in last if h["name"].lower()=="subject"), "Re: (no subject)")
     to   = next((h["value"] for h in last if h["name"].lower()=="from"), "")
@@ -151,7 +167,7 @@ def coach():
     def generate():
         output = ""
         stream = client.chat.completions.create(
-            model=MODEL,
+            model=model,
             temperature=0.3,
             messages=[{"role": "user", "content": prompt}],
             stream=True,
@@ -186,7 +202,8 @@ def madlibs():
         " Finally, under 'Template:', please craft a fill-in-the-blank repliy that will be well-received by the Personality type. Reply will address every Need,"
         " using [placeholders] for missing details and asserting how issues will be resolved."
     )
-    client = OpenAI(base_url=LLM_URL, api_key="ollama")
+    client = llm_client()
+    model = llm_model()
     last = th["messages"][-1]["payload"]["headers"]
     subj = next((h["value"] for h in last if h["name"].lower()=="subject"), "Re: (no subject)")
     to   = next((h["value"] for h in last if h["name"].lower()=="from"), "")
@@ -194,7 +211,7 @@ def madlibs():
     def generate():
         output = ""
         stream = client.chat.completions.create(
-            model=MODEL,
+            model=model,
             temperature=0.3,
             messages=[{"role": "user", "content": prompt}],
             stream=True,
