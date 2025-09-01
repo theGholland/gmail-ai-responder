@@ -96,9 +96,9 @@ body.vaporwave::after{
   z-index: 1; pointer-events: none; will-change: transform;
 
   background:
-    repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 56px),
-    repeating-linear-gradient(to bottom, rgba(255,113,206,.9) 0 3px, rgba(255,113,206,0) 3px 56px);
-  filter: drop-shadow(0 0 10px rgba(1,241,248,.4)) drop-shadow(0 0 14px rgba(255,113,206,.32));
+    repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 80px),
+    repeating-linear-gradient(to bottom, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 80px);
+  filter: drop-shadow(0 0 10px rgba(1,241,248,.4)) drop-shadow(0 0 14px rgba(1,241,248,.32));
 
   transform-origin: 50% 100%;
   transform: perspective(950px) rotateX(62deg) rotateZ(-16deg) translateY(calc(var(--vh) * -22));
@@ -107,7 +107,7 @@ body.vaporwave::after{
   -webkit-mask: linear-gradient(to top, black 0 58%, transparent 90%);
           mask: linear-gradient(to top, black 0 58%, transparent 90%);
 
-  animation: gridDrift 26s linear infinite;
+  animation: gridDrift 20s linear infinite;
 }
 
 @supports not ((mask: linear-gradient(#000,#000)) or (-webkit-mask: linear-gradient(#000,#000))){
@@ -117,8 +117,8 @@ body.vaporwave::after{
     opacity:0.65;
     background:
       linear-gradient(to bottom, var(--sky-c) 0%, transparent 60%),
-      repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 56px),
-      repeating-linear-gradient(to bottom, rgba(255,113,206,.9) 0 3px, rgba(255,113,206,0) 3px 56px);
+      repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 80px),
+      repeating-linear-gradient(to bottom, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 80px);
   }
 }
 
@@ -169,10 +169,10 @@ body.vaporwave::after{
   }
 }
 
-/* tuned to 56px cell period above */
+/* tuned to 80px cell period above */
 @keyframes gridDrift{
   0%   { background-position: 0 0, 0 0; }
-  100% { background-position: 56px 112px, 0 112px; }
+  100% { background-position: 80px 160px, 0 160px; }
 }
 
 @keyframes sunFloat{
