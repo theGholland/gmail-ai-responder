@@ -6,10 +6,15 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from openai import OpenAI
 import base64, email, os, pickle, re, logging
-import tiktoken
+try:
+    import tiktoken
+except Exception:  # pragma: no cover - optional dependency
+    tiktoken = None
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import dotenv
+
+from openai_pricing import estimate_cost
 
 dotenv.load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -37,6 +42,13 @@ def log_openai_usage(usage) -> None:
         usage.prompt_tokens,
         usage.completion_tokens,
         usage.total_tokens,
+    )
+    cost, pricing = estimate_cost(usage.prompt_tokens, usage.completion_tokens)
+    logging.info(
+        "Estimated cost: $%.6f (Input: $%.3f/1K tokens, Output: $%.3f/1K tokens)",
+        cost,
+        pricing.input_per_token * 1000,
+        pricing.output_per_token * 1000,
     )
 
 SCOPES = os.getenv("SCOPES", "https://www.googleapis.com/auth/gmail.modify").split()  # read + create drafts
@@ -250,8 +262,15 @@ def coach():
         if usage_info:
             log_openai_usage(usage_info)
         else:
-            log_token_count(prompt, "Prompt tokens")
-            log_token_count(output, "Completion tokens")
+            prompt_tokens = log_token_count(prompt, "Prompt tokens")
+            completion_tokens = log_token_count(output, "Completion tokens")
+            cost, pricing = estimate_cost(prompt_tokens, completion_tokens)
+            logging.info(
+                "Estimated cost: $%.6f (Input: $%.3f/1K tokens, Output: $%.3f/1K tokens)",
+                cost,
+                pricing.input_per_token * 1000,
+                pricing.output_per_token * 1000,
+            )
         match = re.search(r"(?s)(?:^|\n)Beta\s*[:\-]?\s*(.*)", output)
         beta = match.group(1).strip() if match else None
         if beta:
@@ -308,8 +327,15 @@ def madlibs():
         if usage_info:
             log_openai_usage(usage_info)
         else:
-            log_token_count(prompt, "Prompt tokens")
-            log_token_count(output, "Completion tokens")
+            prompt_tokens = log_token_count(prompt, "Prompt tokens")
+            completion_tokens = log_token_count(output, "Completion tokens")
+            cost, pricing = estimate_cost(prompt_tokens, completion_tokens)
+            logging.info(
+                "Estimated cost: $%.6f (Input: $%.3f/1K tokens, Output: $%.3f/1K tokens)",
+                cost,
+                pricing.input_per_token * 1000,
+                pricing.output_per_token * 1000,
+            )
         match = re.search(r"(?s)Template\s*[:\-]?\s*(.*)", output)
         template = match.group(1).strip() if match else None
         if template:
