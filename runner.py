@@ -96,6 +96,17 @@ def create_gmail_draft(svc, to_addr, subj, body):
     return svc.users().drafts().create(userId="me", body={"message":{"raw":raw}}).execute()
 
 
+def scrub_formatting(text: str) -> str:
+    """Drop HTML formatting tags and collapse excess blank lines."""
+
+    # Remove simple HTML tags like <b> or </div> while preserving angle-bracketed
+    # data such as email addresses. Tags with attributes are also stripped.
+    text = re.sub(r"</?[a-zA-Z][a-zA-Z0-9]*(?:\s+[^<>]*)?>", "", text)
+    # Reduce three or more consecutive newlines to just two to avoid bloated
+    # prompts while keeping paragraph breaks.
+    return re.sub(r"\n{3,}", "\n\n", text)
+
+
 def scrub_links(text: str) -> str:
     """Replace any http(s) URL with its bare domain.
 
@@ -152,6 +163,7 @@ def coach():
         return "Missing goal", 400
 
     thread, th = thread_text(svc, thread_id)
+    thread = scrub_formatting(thread)
     thread = scrub_links(thread)  # drop URL paths so the model only sees domains
     prompt = (
         f"You are a communication coach.\nA) THREAD: <<<{thread}>>>\n"
@@ -194,6 +206,7 @@ def madlibs():
         return "Missing thread_id", 400
 
     thread, th = thread_text(svc, thread_id)
+    thread = scrub_formatting(thread)
     thread = scrub_links(thread)  # drop URL paths so the model only sees domains
     prompt = (
         f"You are a communication expert.\nTHREAD: <<<{thread}>>>\n"
