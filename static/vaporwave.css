@@ -89,7 +89,7 @@ body.vaporwave::after{
   position: fixed;
   /* use viewport-relative offsets for consistent centering */
   left: calc(var(--vw) * -30);
-  right: calc(var(--vw) * -30);
+  right: calc(var(--vw) * -50);
   bottom: calc(var(--vh) * -20);
   height: calc(var(--vh) * 220);
 
