@@ -103,6 +103,18 @@ body.vaporwave::after{
   animation: gridDrift 26s linear infinite;
 }
 
+@supports not ((mask: linear-gradient(#000,#000)) or (-webkit-mask: linear-gradient(#000,#000))){
+  .bg-grid{
+    -webkit-mask: none;
+            mask: none;
+    opacity:0.65;
+    background:
+      linear-gradient(to bottom, var(--sky-c) 0%, transparent 60%),
+      repeating-linear-gradient(to right, rgba(1,241,248,.9) 0 3px, rgba(1,241,248,0) 3px 56px),
+      repeating-linear-gradient(to bottom, rgba(255,113,206,.9) 0 3px, rgba(255,113,206,0) 3px 56px);
+  }
+}
+
 /* Short viewports: keep the grid inside the mask */
 @media (max-height: 820px){
   .bg-grid{
