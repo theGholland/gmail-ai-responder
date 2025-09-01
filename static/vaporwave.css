@@ -286,6 +286,8 @@ body.vaporwave::after{
 
 /* Fields */
 .label{
+  font-family: Orbitron, Inter, sans-serif;
+  font-weight:600;
   font-size:12px;
   letter-spacing:0.04em;
   text-transform:uppercase;
