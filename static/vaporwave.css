@@ -70,52 +70,33 @@ body.vaporwave{
   animation: sunFloat 16s ease-in-out infinite alternate;
 }
 
-/* Oblique neon grid “floor” with parallax motion toward the viewer */
+/* Make the grid visible after the oblique transform */
 .bg-grid{
   position: fixed;
-  inset: auto -12vw -16vh -12vw;   /* overscan to avoid rotation crop */
+  inset: auto -12vw -16vh -12vw;   /* anchor at bottom; overscan so rotation won't crop */
   height: 78vh;
-  z-index: 2;                      /* ensure grid sits above haze */
+  z-index: 1;                       /* if this is < 0 it hides behind the body */
   pointer-events: none;
 
-  /* Denser, thicker lines survive perspective foreshortening */
+  /* thicker, denser lines survive foreshortening */
   background:
-    /* verticals (on top) */
-    repeating-linear-gradient(
-      to right,
-      rgba(1,241,248,0.92) 0 3px,
-      rgba(1,241,248,0.00) 3px 60px
-    ),
-    /* horizontals */
-    repeating-linear-gradient(
-      to bottom,
-      rgba(255,113,206,0.92) 0 3px,
-      rgba(255,113,206,0.00) 3px 60px
-    ),
-    /* ground fade */
+    repeating-linear-gradient(to right, rgba(1,241,248,0.92) 0 3px, rgba(1,241,248,0.00) 3px 60px),
+    repeating-linear-gradient(to bottom, rgba(255,113,206,0.92) 0 3px, rgba(255,113,206,0.00) 3px 60px),
     linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.0) 70%);
-  filter:
-    drop-shadow(0 0 12px rgba(1,241,248,0.45))
-    drop-shadow(0 0 18px rgba(255,113,206,0.35));
+  filter: drop-shadow(0 0 12px rgba(1,241,248,0.45)) drop-shadow(0 0 18px rgba(255,113,206,0.35));
 
-  /* A touch more dramatic depth and an explicit origin */
+  /* perspective + tilt compress lines; these angles keep them readable */
   transform-origin: 50% 100%;
-  transform:
-    perspective(1000px)
-    rotateX(72deg)
-    rotateZ(-16deg)
-    translateY(8vh);
+  transform: perspective(1000px) rotateX(72deg) rotateZ(-16deg) translateY(8vh);
 
-  /* Slow forward drift */
   animation: gridDrift 22s linear infinite;
 }
 
-/* Subtle horizon haze that helps the sun sit in the scene */
 body.vaporwave::after{
   content:"";
   position:fixed; inset:auto 0 30vh 0;
   height: 24vh;
-  z-index: -1;                     /* place haze behind the grid */
+  z-index: 1;
   background: radial-gradient(60% 100% at 50% 0%,
               rgba(255,255,255,0.35), rgba(255,255,255,0.0) 70%);
   filter: blur(8px) saturate(115%);
@@ -123,21 +104,10 @@ body.vaporwave::after{
   opacity: .9;
 }
 
-/* Keyframes */
+/* Motion tuned to the new cell size */
 @keyframes gridDrift{
-  0%{
-    background-position:
-      0 0,      /* verticals */
-      0 0,      /* horizontals */
-      0 0;      /* fade */
-  }
-  100%{
-    /* advance roughly one cell diagonally */
-    background-position:
-      60px 120px,
-      0 120px,
-      0 0;
-  }
+  0%   { background-position: 0 0, 0 0, 0 0; }
+  100% { background-position: 60px 120px, 0 120px, 0 0; }
 }
 
 @keyframes sunFloat{
