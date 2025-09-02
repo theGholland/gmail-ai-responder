@@ -34,11 +34,11 @@ def log_token_count(text: str, label: str) -> int:
 def log_usage(
     prompt: str, completion: str, usage, model: str | None = None
 ) -> None:
-    """Log token usage and estimated cost.
+    """Log token usage and cost.
 
     If using a local model, estimate what OpenAI would have charged based on
-    token counts. When calling the OpenAI API, rely on the usage metadata the
-    API returns and skip cost estimation entirely.
+    token counts. When calling the OpenAI API, compute cost using the usage
+    metadata it returns.
     """
     model = model or llm_model()
     if USE_OPENAI:
@@ -49,6 +49,8 @@ def log_usage(
                 usage.completion_tokens,
                 usage.total_tokens,
             )
+            cost = openai_cost(model, usage.prompt_tokens, usage.completion_tokens)
+            logging.info("OpenAI cost: $%.6f", cost)
     else:
         pt = log_token_count(prompt, "Prompt tokens")
         ct = log_token_count(completion, "Completion tokens")
