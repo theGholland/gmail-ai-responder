@@ -15,8 +15,8 @@
   --sky-b:#a14bff;     /* magenta */
   --sky-c:#ff8c42;     /* orange horizon */
   --haze:#ffd0f0;      /* subtle mist */
-  --sun-stripe:14px;
-  --sun-gap:8px;
+  --sun-stripe:24px;
+  --sun-gap:12px;
   /* viewport relative units */
   --vw: 1vw;
   --vh: 1vh;
@@ -88,6 +88,16 @@ body.vaporwave{
   background:repeating-linear-gradient(to bottom, rgba(0,0,0,0.3) 0 var(--sun-stripe), transparent var(--sun-stripe) calc(var(--sun-stripe) + var(--sun-gap)));
   -webkit-mask:radial-gradient(circle at 50% 50%, transparent 56%, #000 56%);
           mask:radial-gradient(circle at 50% 50%, transparent 56%, #000 56%);
+}
+
+.bg-sunset::after{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, rgba(255,210,154,0.25) 0%, rgba(255,106,77,0.15) 40%, transparent 70%);
+  z-index:-1;
 }
 
 /* Horizon haze sits between sky and grid to soften the join */
