@@ -63,13 +63,12 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # Default to the highest-tier OpenAI model for cost estimation
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5")
 
-# Pricing as of May 2024 (USD per 1K tokens)
+# Pricing as of September 2025 (USD per 1M tokens)
 OPENAI_PRICING = {
-    "gpt-5": {"prompt": 0.02, "completion": 0.06},  # placeholder values
-    "gpt-4o": {"prompt": 0.005, "completion": 0.015},
-    "gpt-4o-mini": {"prompt": 0.00015, "completion": 0.0006},
-    "gpt-4-turbo": {"prompt": 0.01, "completion": 0.03},
-    "gpt-3.5-turbo": {"prompt": 0.0005, "completion": 0.0015},
+    "gpt-5": {"prompt": 1.25, "completion": 10.00},  
+    "gpt-5-mini": {"prompt": 0.250, "completion": 2.00},
+    "gpt-5-nano": {"prompt": 0.05, "completion": 0.4},
+    "gpt-4o-mini": {"prompt": 0.6, "completion": 2.40},
 }
 
 
@@ -80,7 +79,7 @@ def openai_cost(model: str = "gpt-5", prompt_tokens: int = 0, completion_tokens:
         return 0.0
     return (
         prompt_tokens * pricing["prompt"] + completion_tokens * pricing["completion"]
-    ) / 1000
+    ) / 1000000
 
 
 def llm_client():
