@@ -47,8 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
     mask.width = mask.height = size;
     const mCtx = mask.getContext('2d');
     mCtx.fillStyle = '#000';
-    for (let y = 0; y < size; y += 16) {
-      mCtx.fillRect(0, y, size, 10);
+    for (let y = 0; y < size; y += 22) {
+      mCtx.fillRect(0, y, size, 14);
     }
     mCtx.globalCompositeOperation = 'destination-in';
     mCtx.beginPath();
