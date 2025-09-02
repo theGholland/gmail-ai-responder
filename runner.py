@@ -32,7 +32,11 @@ def log_token_count(text: str, label: str) -> int:
 
 
 def log_usage(
-    prompt: str, completion: str, usage, model: str | None = None
+    prompt: str,
+    completion: str,
+    usage,
+    model: str | None = None,
+    use_openai: bool | None = None,
 ) -> None:
     """Log token usage and cost.
 
@@ -40,8 +44,10 @@ def log_usage(
     token counts. When calling the OpenAI API, compute cost using the usage
     metadata it returns.
     """
-    model = model or llm_model()
-    if USE_OPENAI:
+    if use_openai is None:
+        use_openai = USE_OPENAI
+    model = model or llm_model(use_openai)
+    if use_openai:
         if usage is not None:
             logging.info(
                 "OpenAI usage - prompt: %s tokens, completion: %s tokens, total: %s tokens",
@@ -84,16 +90,20 @@ def openai_cost(model: str = "gpt-5", prompt_tokens: int = 0, completion_tokens:
     ) / 1000000
 
 
-def llm_client():
-    if USE_OPENAI:
+def llm_client(use_openai: bool | None = None):
+    if use_openai is None:
+        use_openai = USE_OPENAI
+    if use_openai:
         if not OPENAI_API_KEY:
             raise ValueError("OPENAI_API_KEY required when USE_OPENAI=true")
         return OpenAI(api_key=OPENAI_API_KEY)
     return OpenAI(base_url=LLM_URL, api_key="ollama")
 
 
-def llm_model():
-    return OPENAI_MODEL if USE_OPENAI else MODEL
+def llm_model(use_openai: bool | None = None):
+    if use_openai is None:
+        use_openai = USE_OPENAI
+    return OPENAI_MODEL if use_openai else MODEL
 
 app = Flask(__name__)
 
@@ -250,6 +260,9 @@ def coach():
     if goal is None:
         return "Missing goal", 400
 
+    use_openai = (
+        request.form.get("use_openai", str(USE_OPENAI)).lower() == "true"
+    )
     thread, th = thread_text(svc, thread_id)
     thread = scrub_formatting(thread)
     thread = scrub_links(thread)  # drop URL paths so the model only sees domains
@@ -258,8 +271,8 @@ def coach():
         f"B) MY DRAFT: <<<{draft}>>>\nC) GOAL: {goal}\n"
         "Tasks: diagnose tone; critique; two rewrites (Alpha minimal, Beta assertive). Keep facts intact."
     )
-    client = llm_client()
-    model = llm_model()
+    client = llm_client(use_openai)
+    model = llm_model(use_openai)
     last = th["messages"][-1]["payload"]["headers"]
     subj = next((h["value"] for h in last if h["name"].lower()=="subject"), "Re: (no subject)")
     to   = next((h["value"] for h in last if h["name"].lower()=="from"), "")
@@ -268,7 +281,7 @@ def coach():
         output = ""
         usage_info = None
         stream_kwargs = {}
-        if USE_OPENAI:
+        if use_openai:
             stream_kwargs["stream_options"] = {"include_usage": True}
         stream = client.chat.completions.create(
             model=model,
@@ -282,9 +295,9 @@ def coach():
             if text:
                 output += text
                 yield text
-            if USE_OPENAI and getattr(chunk, "usage", None) is not None:
+            if use_openai and getattr(chunk, "usage", None) is not None:
                 usage_info = chunk.usage
-        log_usage(prompt, output, usage_info, model)
+        log_usage(prompt, output, usage_info, model, use_openai)
         match = re.search(r"(?s)(?:^|\n)Beta\s*[:\-]?\s*(.*)", output)
         beta = match.group(1).strip() if match else None
         if beta:
@@ -302,6 +315,9 @@ def madlibs():
     if thread_id is None:
         return "Missing thread_id", 400
 
+    use_openai = (
+        request.form.get("use_openai", str(USE_OPENAI)).lower() == "true"
+    )
     thread, th = thread_text(svc, thread_id)
     thread = scrub_formatting(thread)
     thread = scrub_links(thread)  # drop URL paths so the model only sees domains
@@ -312,8 +328,8 @@ def madlibs():
         " Finally, under 'Template:', please craft a fill-in-the-blank repliy that will be well-received by the Personality type. Reply will address every Need,"
         " using [placeholders] for missing details and asserting how issues will be resolved."
     )
-    client = llm_client()
-    model = llm_model()
+    client = llm_client(use_openai)
+    model = llm_model(use_openai)
     last = th["messages"][-1]["payload"]["headers"]
     subj = next((h["value"] for h in last if h["name"].lower()=="subject"), "Re: (no subject)")
     to   = next((h["value"] for h in last if h["name"].lower()=="from"), "")
@@ -322,7 +338,7 @@ def madlibs():
         output = ""
         usage_info = None
         stream_kwargs = {}
-        if USE_OPENAI:
+        if use_openai:
             stream_kwargs["stream_options"] = {"include_usage": True}
         stream = client.chat.completions.create(
             model=model,
@@ -336,9 +352,9 @@ def madlibs():
             if text:
                 output += text
                 yield text
-            if USE_OPENAI and getattr(chunk, "usage", None) is not None:
+            if use_openai and getattr(chunk, "usage", None) is not None:
                 usage_info = chunk.usage
-        log_usage(prompt, output, usage_info, model)
+        log_usage(prompt, output, usage_info, model, use_openai)
         match = re.search(r"(?s)Template\s*[:\-]?\s*(.*)", output)
         template = match.group(1).strip() if match else None
         if template:

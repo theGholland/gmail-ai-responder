@@ -86,6 +86,7 @@
         const modelToggle = document.querySelector('#model-toggle');
 
       let timerHandle;
+      let useOpenAI = modelToggle.checked;
 
       function startTimer() {
         const start = performance.now();
@@ -158,6 +159,7 @@
         form.append('thread_id', active.dataset.id);
         form.append('draft', draftInput.value);
         form.append('goal', goalInput.value);
+        form.append('use_openai', useOpenAI);
         coachBtn.disabled = true;
         coachBtn.querySelector('span:last-child').textContent = 'Coaching…';
         startTimer();
@@ -176,6 +178,7 @@
         if (!active) return alert('Select a thread first');
         const form = new FormData();
         form.append('thread_id', active.dataset.id);
+        form.append('use_openai', useOpenAI);
         identifyBtn.disabled = true;
         identifyBtn.querySelector('span:last-child').textContent = 'Identifying…';
         startTimer();
@@ -190,7 +193,8 @@
       });
 
       modelToggle.addEventListener('change', () => {
-        const mode = modelToggle.checked ? 'GPT-5 API' : 'local llama3.1';
+        useOpenAI = modelToggle.checked;
+        const mode = useOpenAI ? 'GPT-5 API' : 'local llama3.1';
         console.log(`Model switch set to ${mode}`);
       });
     });
