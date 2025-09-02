@@ -15,6 +15,8 @@
   --sky-b:#a14bff;     /* magenta */
   --sky-c:#ff8c42;     /* orange horizon */
   --haze:#ffd0f0;      /* subtle mist */
+  --sun-stripe:14px;
+  --sun-gap:8px;
   /* viewport relative units */
   --vw: 1vw;
   --vh: 1vh;
@@ -67,7 +69,11 @@ body.vaporwave{
   /* scanline mask */
   -webkit-mask:
     radial-gradient(circle at 50% 50%, #000 99%, transparent 100%) /* crisp circular edge */ ,
-    repeating-linear-gradient(to bottom, #000 0 14px, transparent 14px 22px);
+    repeating-linear-gradient(
+      to bottom,
+      #000 0 var(--sun-stripe),
+      transparent var(--sun-stripe) calc(var(--sun-stripe) + var(--sun-gap))
+    );
   -webkit-mask-composite: source-in; /* keep stripes inside the circle */
           mask-composite: intersect;
   animation: sunFloat 16s steps(120) infinite alternate;
@@ -79,9 +85,9 @@ body.vaporwave{
   inset:-40%;
   border-radius:50%;
   pointer-events:none;
-  background:repeating-linear-gradient(to bottom, rgba(0,0,0,0.3) 0 14px, transparent 14px 22px);
-  -webkit-clip-path:circle(70%);
-          clip-path:circle(70%);
+  background:repeating-linear-gradient(to bottom, rgba(0,0,0,0.3) 0 var(--sun-stripe), transparent var(--sun-stripe) calc(var(--sun-stripe) + var(--sun-gap)));
+  -webkit-mask:radial-gradient(circle at 50% 50%, transparent 56%, #000 56%);
+          mask:radial-gradient(circle at 50% 50%, transparent 56%, #000 56%);
 }
 
 /* Horizon haze sits between sky and grid to soften the join */
