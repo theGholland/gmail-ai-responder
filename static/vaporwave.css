@@ -58,7 +58,7 @@ body.vaporwave{
       var(--sun-core) 38%,
       #ff9c66 62%,
       var(--sun-rim) 85%,
-      rgba(255,106,77,0.0) 100%);
+      var(--sun-rim) 100%);
   box-shadow:
     0 0 120px rgba(255,166,102,0.45),
     0 0 240px rgba(255,106,77,0.30),
@@ -66,7 +66,7 @@ body.vaporwave{
   pointer-events: none;
   /* scanline mask */
   -webkit-mask:
-    radial-gradient(circle at 50% 50%, #000 65%, transparent 66%) /* crisp circular edge */ ,
+    radial-gradient(circle at 50% 50%, #000 99%, transparent 100%) /* crisp circular edge */ ,
     repeating-linear-gradient(to bottom, #000 0 10px, transparent 10px 16px);
   -webkit-mask-composite: source-in; /* keep stripes inside the circle */
           mask-composite: intersect;
