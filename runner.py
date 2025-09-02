@@ -60,10 +60,12 @@ LLM_URL = os.getenv("LLM_URL", "http://127.0.0.1:11434/v1")                     
 MODEL  = os.getenv("MODEL", "llama3.1")                                        # or qwen2.5:14b-instruct
 USE_OPENAI = os.getenv("USE_OPENAI", "false").lower() == "true"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+# Default to the highest-tier OpenAI model for cost estimation
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5")
 
 # Pricing as of May 2024 (USD per 1K tokens)
 OPENAI_PRICING = {
+    "gpt-5": {"prompt": 0.02, "completion": 0.06},  # placeholder values
     "gpt-4o": {"prompt": 0.005, "completion": 0.015},
     "gpt-4o-mini": {"prompt": 0.00015, "completion": 0.0006},
     "gpt-4-turbo": {"prompt": 0.01, "completion": 0.03},
@@ -71,8 +73,9 @@ OPENAI_PRICING = {
 }
 
 
-def openai_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
-    pricing = OPENAI_PRICING.get(model.lower())
+def openai_cost(model: str = "gpt-5", prompt_tokens: int = 0, completion_tokens: int = 0) -> float:
+    """Estimate the cost using OpenAI's pricing, defaulting to the best model."""
+    pricing = OPENAI_PRICING.get(model.lower()) or OPENAI_PRICING.get("gpt-5")
     if not pricing:
         return 0.0
     return (
