@@ -291,11 +291,12 @@ def coach():
             **stream_kwargs,
         )
         for chunk in stream:
-            text = getattr(chunk.choices[0].delta, "content", "")
-            if text:
-                output += text
-                yield text
-            if use_openai and getattr(chunk, "usage", None) is not None:
+            if getattr(chunk, "choices", None):
+                text = getattr(chunk.choices[0].delta, "content", "")
+                if text:
+                    output += text
+                    yield text
+            if use_openai and getattr(chunk, "usage", None):
                 usage_info = chunk.usage
         log_usage(prompt, output, usage_info, model, use_openai)
         match = re.search(r"(?s)(?:^|\n)Beta\s*[:\-]?\s*(.*)", output)
@@ -348,11 +349,12 @@ def madlibs():
             **stream_kwargs,
         )
         for chunk in stream:
-            text = getattr(chunk.choices[0].delta, "content", "")
-            if text:
-                output += text
-                yield text
-            if use_openai and getattr(chunk, "usage", None) is not None:
+            if getattr(chunk, "choices", None):
+                text = getattr(chunk.choices[0].delta, "content", "")
+                if text:
+                    output += text
+                    yield text
+            if use_openai and getattr(chunk, "usage", None):
                 usage_info = chunk.usage
         log_usage(prompt, output, usage_info, model, use_openai)
         match = re.search(r"(?s)Template\s*[:\-]?\s*(.*)", output)
