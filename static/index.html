@@ -14,10 +14,18 @@
   <div class="bg-sunset" aria-hidden="true"></div>
   <div class="bg-grid" aria-hidden="true"></div>
 
-  <header class="site-header">
-    <h1 class="title">Tone Coach</h1>
-    <p class="subtitle">Neon clarity for your inbox</p>
-  </header>
+    <header class="site-header">
+      <h1 class="title">Tone Coach</h1>
+      <p class="subtitle">Neon clarity for your inbox</p>
+      <div class="model-toggle">
+        <span class="model-label">llama3.1</span>
+        <label class="switch">
+          <input type="checkbox" id="model-toggle" />
+          <span class="slider"></span>
+        </label>
+        <span class="model-label">gpt-5</span>
+      </div>
+    </header>
 
   <main class="grid-container">
     <section class="panel panel--inbox">
@@ -70,11 +78,12 @@
       const threadBox = document.querySelector('.thread-box');
       const coachBtn = document.querySelector('.coach-btn');
       const identifyBtn = document.querySelector('.identify-btn');
-      const outputBox = document.querySelector('.output-box');
-      const timerEl = document.querySelector('.timer');
-      const draftInput = document.querySelector('#draft');
-      const goalInput = document.querySelector('.goal');
-      const searchInput = document.querySelector('input.search');
+        const outputBox = document.querySelector('.output-box');
+        const timerEl = document.querySelector('.timer');
+        const draftInput = document.querySelector('#draft');
+        const goalInput = document.querySelector('.goal');
+        const searchInput = document.querySelector('input.search');
+        const modelToggle = document.querySelector('#model-toggle');
 
       let timerHandle;
 
@@ -178,6 +187,11 @@
           identifyBtn.disabled = false;
           identifyBtn.querySelector('span:last-child').textContent = 'Identify';
         }
+      });
+
+      modelToggle.addEventListener('change', () => {
+        const mode = modelToggle.checked ? 'GPT-5 API' : 'local llama3.1';
+        console.log(`Model switch set to ${mode}`);
       });
     });
   </script>
